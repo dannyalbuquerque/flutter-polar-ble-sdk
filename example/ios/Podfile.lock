@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - "permission_handler (4.4.0+hotfix.4)":
+    - Flutter
+  - polar_ble_sdk (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
+  - polar_ble_sdk (from `.symlinks/plugins/polar_ble_sdk/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  permission_handler:
+    :path: ".symlinks/plugins/permission_handler/ios"
+  polar_ble_sdk:
+    :path: ".symlinks/plugins/polar_ble_sdk/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  permission_handler: 8278954f2382902f63f00dd8828769c0bd6d511b
+  polar_ble_sdk: e01a4b5bf0604e92f43e97254fccceb4635d4d28
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.1

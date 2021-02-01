@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AndroidLogFilters">
+    <option name="TOOL_WINDOW_LOG_LEVEL" value="debug" />
+    <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f8f6ed9e-d99c-4fe5-a6de-d2bc4ce37fbf" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dart File" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1nOGgmeLEhJ70v9ZiCgChgZKea6" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="dart.analysis.tool.window.force.activate" value="true" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="io.flutter.reload.alreadyRun" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f8f6ed9e-d99c-4fe5-a6de-d2bc4ce37fbf" name="Default Changelist" comment="" />
+      <created>1611253836243</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1611253836243</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1868" height="212" key="GridCell.Tab.0.bottom" timestamp="1611929930605">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="212" key="GridCell.Tab.0.bottom/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611929930605" />
+    <state width="1868" height="212" key="GridCell.Tab.0.center" timestamp="1611929930604">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="212" key="GridCell.Tab.0.center/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611929930604" />
+    <state width="1868" height="212" key="GridCell.Tab.0.left" timestamp="1611929930604">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="212" key="GridCell.Tab.0.left/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611929930604" />
+    <state width="1868" height="212" key="GridCell.Tab.0.right" timestamp="1611929930605">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="212" key="GridCell.Tab.0.right/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611929930605" />
+    <state width="1868" height="397" key="GridCell.Tab.1.bottom" timestamp="1611261663452">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="397" key="GridCell.Tab.1.bottom/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611261663452" />
+    <state width="1868" height="397" key="GridCell.Tab.1.center" timestamp="1611261663452">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="397" key="GridCell.Tab.1.center/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611261663452" />
+    <state width="1868" height="397" key="GridCell.Tab.1.left" timestamp="1611261663451">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="397" key="GridCell.Tab.1.left/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611261663451" />
+    <state width="1868" height="397" key="GridCell.Tab.1.right" timestamp="1611261663452">
+      <screen x="0" y="23" width="1920" height="983" />
+    </state>
+    <state width="1868" height="397" key="GridCell.Tab.1.right/-1440.203.1440.877/0.23.1920.983@0.23.1920.983" timestamp="1611261663452" />
+  </component>
+</project>

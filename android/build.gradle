@@ -1,0 +1,50 @@
+group 'com.example.polar_ble_sdk'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+        flatDir {
+            dirs project(':polar_ble_sdk').file('libs')
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+
+    defaultConfig {
+        minSdkVersion 21
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+
+    dependencies {
+        implementation(name:'polar-ble-sdk', ext:'aar')
+        implementation(name:'polar-protobuf-release', ext:'aar')
+        implementation 'com.google.protobuf:protobuf-java:3.1.0'
+        implementation 'io.reactivex.rxjava3:rxjava:3.0.0'
+        implementation 'commons-io:commons-io:2.8.0'
+        implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+        implementation 'androidx.appcompat:appcompat:1.2.0'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

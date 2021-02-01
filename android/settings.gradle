@@ -1,0 +1,3 @@
+include ':polar-protobuf-release'
+include ':polar-ble-sdk'
+rootProject.name = 'polar_ble_sdk'
