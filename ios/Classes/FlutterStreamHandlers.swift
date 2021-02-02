@@ -129,7 +129,7 @@ public class HrStreamHandler: NSObject, FlutterStreamHandler, PolarBleApiDeviceH
     public func hrValueReceived(_ identifier: String, data: PolarHrData) {
         NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
         if let events = self.eventSink {
-            let hrDict : [String: Any] = [ "hr": data.hr, "rrs":data.rrsMs,"timestamp": Date.init().timeIntervalSince1970]
+            let hrDict : [String: Any] = [ "hr": data.hr, "rrs":data.rrsMs,"timestamp": (Date.init().timeIntervalSince1970 * 1000.0).rounded()]
             let hrJsonData = try! JSONSerialization.data(withJSONObject: hrDict, options: [])
             let hrJsonString = String(data: hrJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
             events(hrJsonString)
