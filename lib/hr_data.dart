@@ -1,7 +1,7 @@
 class HrData {
   int hr;
   List<int> rrs;
-  int timestamp;
+  double timestamp;
 
   HrData({this.hr, this.rrs, this.timestamp});
 
