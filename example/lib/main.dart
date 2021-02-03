@@ -85,6 +85,7 @@ class _MyAppState extends State<MyApp> {
   void connect() async {
     try {
       await polarBleSdk.connect(deviceIdCtrl.text);
+      print('connected');
     }catch (e,stack){
       print(stack.toString());
     }

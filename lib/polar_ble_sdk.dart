@@ -21,14 +21,17 @@ class PolarBleSdk {
 
   Future<void> connect(String deviceId) async {
     await _channel.invokeMethod(MethodName.connect, {"deviceId":deviceId});
+    return;
   }
 
   Future<void> disconnect(String deviceId) async {
     await _channel.invokeMethod(MethodName.disconnect, {"deviceId":deviceId});
+    return;
  }
 
   Future<void> autoconnect() async {
     await _channel.invokeMethod(MethodName.autoconnect);
+    return;
   }
 
   Stream<dynamic> hrBroadcast() {

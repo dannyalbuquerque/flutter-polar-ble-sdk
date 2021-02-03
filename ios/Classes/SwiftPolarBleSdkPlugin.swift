@@ -56,6 +56,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                 print("Params received on iOS = \(deviceId)")
                 do{
                     try self.api.connectToDevice(deviceId)
+                    result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
                                         message: err.localizedDescription,
@@ -73,6 +74,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                     switch e {
                     case .completed:
                         NSLog("auto connect search complete")
+                        result(nil)
                     case .error(let err):
                         NSLog("auto connect failed: \(err)")
                         result(FlutterError(code: call.method,
@@ -92,6 +94,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                 print("Params received on iOS = \(deviceId)")
                 do{
                     try self.api.disconnectFromDevice(deviceId)
+                    result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
                                         message: err.localizedDescription,

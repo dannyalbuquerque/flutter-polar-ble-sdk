@@ -163,6 +163,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       String deviceId = call.argument("deviceId");
       try {
         api.connectToDevice(deviceId);
+        result.success(null);
       } catch (PolarInvalidArgument polarInvalidArgument) {
         polarInvalidArgument.printStackTrace();
         result.error("PolarInvalidArgument", polarInvalidArgument.getMessage(), null);
@@ -172,6 +173,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       String deviceId = call.argument("deviceId");
       try {
         api.disconnectFromDevice(deviceId);
+        result.success(null);
       } catch (PolarInvalidArgument polarInvalidArgument) {
         polarInvalidArgument.printStackTrace();
         result.error("PolarInvalidArgument", polarInvalidArgument.getMessage(), null);
@@ -183,7 +185,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         autoConnectDisposable = null;
       }
       autoConnectDisposable = api.autoConnectToDevice(-50, "180D", null).subscribe(
-              () -> Log.d(TAG, "auto connect search complete"),
+              () ->         result.success(null),
               throwable -> Log.e(TAG, "" + throwable.toString())
       );
     }
