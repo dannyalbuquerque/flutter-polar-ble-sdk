@@ -11,6 +11,8 @@ import 'accelerometer_data.dart';
 export 'accelerometer_data.dart';
 export 'hr_data.dart';
 
+const String POLAR_H10 = 'Polar H10';
+
 class PolarBleSdk {
   final _channel = MethodChannel('polar_ble_sdk');
   final _hrBroadcastEventChannel = EventChannel(EventName.hrBroadcast);
