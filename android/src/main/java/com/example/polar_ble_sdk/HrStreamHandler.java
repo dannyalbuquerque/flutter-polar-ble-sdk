@@ -38,7 +38,7 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
                                     JSONObject json = new JSONObject();
                                     json.put("hr", polarHrData.hr);
                                     json.put("rrs", new JSONArray(polarHrData.rrsMs));
-                                    json.put("timestamp", new Timestamp(System.currentTimeMillis()).getNanos());
+                                    json.put("timestamp", new Timestamp(System.currentTimeMillis()).getTime());
                                     events.success(json.toString());
                             },
                             throwable -> {
