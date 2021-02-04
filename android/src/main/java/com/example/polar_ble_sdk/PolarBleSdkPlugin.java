@@ -119,7 +119,11 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
     accEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
       @Override
       public void onListen(Object arguments, EventChannel.EventSink events) {
-        if (accDisposable == null) {
+        if (accDisposable != null) {
+            // NOTE dispose will stop streaming if it is "running"
+            accDisposable.dispose();
+            accDisposable = null;
+          }
           String deviceId = arguments.toString();
           accDisposable = api.requestAccSettings(deviceId)
                   .toFlowable()
@@ -147,17 +151,15 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                             Log.d(TAG, "complete");
                             events.endOfStream();
                           }                  );
-        } else {
-          // NOTE dispose will stop streaming if it is "running"
-          accDisposable.dispose();
-          accDisposable = null;
-        }
+
       }
       @Override
       public void onCancel(Object arguments) {
         Log.d(TAG, EventName.acc+ " onCancel");
-        accDisposable.dispose();
-        accDisposable = null;
+        if (accDisposable != null) {
+          accDisposable.dispose();
+          accDisposable = null;
+        }
       }
     });
     hrEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.hr);
@@ -166,7 +168,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
     ecgEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
       @Override
       public void onListen(Object arguments, EventChannel.EventSink events) {
-        if (ecgDisposable == null) {
+        if (ecgDisposable != null) {
+          ecgDisposable.dispose();
+          ecgDisposable = null;
+        }
           String deviceId = arguments.toString();
           ecgDisposable = api.requestEcgSettings(deviceId)
                   .toFlowable()
@@ -194,17 +199,15 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                             events.endOfStream();
                           }
                   );
-        } else {
-          // NOTE stops streaming if it is "running"
-          ecgDisposable.dispose();
-          ecgDisposable = null;
-        }
+
       }
       @Override
       public void onCancel(Object arguments) {
         Log.d(TAG, EventName.ecg+ " onCancel");
-        ecgDisposable.dispose();
-        ecgDisposable = null;
+        if (ecgDisposable != null) {
+          ecgDisposable.dispose();
+          ecgDisposable = null;
+        }
       }
     });
   }

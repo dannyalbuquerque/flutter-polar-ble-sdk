@@ -29,7 +29,10 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
 
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
-        if (hrDisposable == null) {
+        if (hrDisposable == null)   {
+        hrDisposable.dispose();
+        hrDisposable = null;
+    }
             String deviceId = arguments.toString();
             hrDisposable = hrDataSubject
                     .observeOn(AndroidSchedulers.mainThread())
@@ -49,15 +52,13 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
                                 Log.d(TAG, "complete");
                                 events.endOfStream();
                             }                  );
-        } else {
-            // NOTE dispose will stop streaming if it is "running"
-            hrDisposable.dispose();
-            hrDisposable = null;
-        }
+
     }
     @Override
     public void onCancel(Object arguments) {
-        hrDisposable.dispose();
-        hrDisposable = null;
+        if (hrDisposable == null)   {
+            hrDisposable.dispose();
+            hrDisposable = null;
+        }
     }
 }
