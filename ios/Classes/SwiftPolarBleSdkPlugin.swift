@@ -19,6 +19,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     var autoConnectDisposable: Disposable?
     var accDisposable: Disposable?
     var ecgDisposable: Disposable?
+    
+    var connectResult: FlutterResult?
+    var disconnectResult: FlutterResult?
         
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "polar_ble_sdk", binaryMessenger: registrar.messenger())
@@ -61,7 +64,8 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                 print("Params received on iOS = \(deviceId)")
                 do{
                     try self.api.connectToDevice(deviceId)
-                    result(nil)
+                    connectResult = result;
+                    //result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
                                         message: err.localizedDescription,
@@ -99,7 +103,8 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                 print("Params received on iOS = \(deviceId)")
                 do{
                     try self.api.disconnectFromDevice(deviceId)
-                    result(nil)
+                    disconnectResult = result
+                    //result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
                                         message: err.localizedDescription,
@@ -125,6 +130,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     
     public func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DISCONNECTED: \(polarDeviceInfo)")
+        disconnectResult?(nil)
     }
     
     // PolarBleApiDeviceInfoObserver
@@ -144,6 +150,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     // PolarBleApiDeviceAccelerometerObserver
     public func accFeatureReady(_ identifier: String) {
         NSLog("ACC READY")
+        connectResult?(nil)
     }
     
     public func ohrPPGFeatureReady(_ identifier: String) {

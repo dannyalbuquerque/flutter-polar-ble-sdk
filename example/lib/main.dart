@@ -101,6 +101,7 @@ class _MyAppState extends State<MyApp> {
   void disconnect() async {
     try {
       await polarBleSdk.disconnect(deviceIdCtrl.text);
+      print('disconnected');
     }catch (e,stack){
       print(stack.toString());
     }
