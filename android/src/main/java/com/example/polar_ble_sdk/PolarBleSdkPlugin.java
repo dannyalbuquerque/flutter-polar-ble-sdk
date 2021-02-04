@@ -8,9 +8,11 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reactivestreams.Publisher;
 
+import java.sql.Timestamp;
 import java.util.Observable;
 import java.util.UUID;
 
@@ -55,6 +57,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private EventChannel hrBroadcastEventChannel;
   private EventChannel accEventChannel;
   private EventChannel hrEventChannel;
+  private EventChannel ecgEventChannel;
   private BehaviorSubject<PolarHrData> hrDataSubject = BehaviorSubject.create();
 
   private Context context;
@@ -62,6 +65,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   Disposable broadcastDisposable;
   Disposable autoConnectDisposable;
   Disposable accDisposable;
+  Disposable ecgDisposable;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -153,6 +157,49 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
     });
     hrEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.hr);
     hrEventChannel.setStreamHandler(new HrStreamHandler(hrDataSubject));
+    ecgEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.ecg);
+    ecgEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+      @Override
+      public void onListen(Object arguments, EventChannel.EventSink events) {
+        if (ecgDisposable == null) {
+          String deviceId = arguments.toString();
+          ecgDisposable = api.requestEcgSettings(deviceId)
+                  .toFlowable()
+                  .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) polarEcgSettings -> {
+                    PolarSensorSetting sensorSetting = polarEcgSettings.maxSettings();
+                    return api.startEcgStreaming(deviceId, sensorSetting);
+                  }).subscribe(
+                          polarEcgData -> {
+                            for (Integer microVolts : polarEcgData.samples) {
+                              Log.d(TAG, "    yV: " + microVolts);
+                            }
+                            JSONObject json = new JSONObject();
+                            json.put("samples", new JSONArray(polarEcgData.samples));
+                            json.put("timestamp", polarEcgData.timeStamp);
+                            events.success(json.toString());
+                          },
+                          throwable -> {
+                            Log.e(TAG, "" + throwable.getLocalizedMessage());
+                            events.error(TAG, throwable.getLocalizedMessage(), null);
+                          },
+                          () -> {
+                            Log.d(TAG, "complete");
+                            events.endOfStream();
+                          }
+                  );
+        } else {
+          // NOTE stops streaming if it is "running"
+          ecgDisposable.dispose();
+          ecgDisposable = null;
+        }
+      }
+      @Override
+      public void onCancel(Object arguments) {
+        Log.d(TAG, EventName.ecg+ " onCancel");
+        ecgDisposable.dispose();
+        ecgDisposable = null;
+      }
+    });
   }
 
   @Override
@@ -225,7 +272,9 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void deviceDisconnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d(TAG, "DISCONNECTED: " + polarDeviceInfo.deviceId);
+        ecgDisposable = null;
         accDisposable = null;
+        //ppgDisposable = null;
       }
 
       @Override

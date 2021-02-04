@@ -23,6 +23,7 @@ class _MyAppState extends State<MyApp> {
   int _lastHr;
   AccelerometerData _lastAccData;
   HrData _lastHrData;
+  EcgData _lastEcgData;
 
   @override
   void initState() {
@@ -56,9 +57,11 @@ class _MyAppState extends State<MyApp> {
                 //RaisedButton(onPressed: hrBroadcast, child: Text('HR broadcast'),),
                 RaisedButton(onPressed: acc, child: Text('ACC'),),
                 RaisedButton(onPressed: hr, child: Text('HR'),),
+                RaisedButton(onPressed: ecg, child: Text('ECG'),),
                 SizedBox(height: 32),
                 _lastAccData != null ? Text('ACC: ${_lastAccData.toString()}'): Container(),
-                 _lastHrData != null ? Text('$_lastHrData'): Container(),
+                _lastHrData != null ? Text('$_lastHrData'): Container(),
+                _lastEcgData != null ? Text('$_lastEcgData'): Container(),
               ],
             ),
           ),
@@ -141,6 +144,21 @@ class _MyAppState extends State<MyApp> {
         print(hrData.toString());
         setState(() {
           _lastHrData = hrData;
+        });
+      }, onError: (e) {
+        print(e);
+        }, onDone: ()=>print('done'), cancelOnError: true,);
+    }catch (e,stack){
+      print(stack.toString());
+    }
+  }
+
+      void ecg() {
+    try {
+      polarBleSdk.ecg(deviceIdCtrl.text).listen((ecgData) {
+        print(ecgData.toString());
+        setState(() {
+          _lastEcgData = ecgData;
         });
       }, onError: (e) {
         print(e);

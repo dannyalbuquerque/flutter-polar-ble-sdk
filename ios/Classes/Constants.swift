@@ -8,6 +8,7 @@ struct Constants {
         static let  hrBroadcast = "hrBroadcast"
         static let  acc = "acc"
         static let  hr = "hr"
+        static let  ecg = "ecg"
     }
     struct Arguments {
         static let  deviceId = "deviceId"

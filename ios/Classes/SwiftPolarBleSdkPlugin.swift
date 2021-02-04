@@ -18,6 +18,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     var broadcastDisposable: Disposable?
     var autoConnectDisposable: Disposable?
     var accDisposable: Disposable?
+    var ecgDisposable: Disposable?
         
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "polar_ble_sdk", binaryMessenger: registrar.messenger())
@@ -42,6 +43,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         let hrEventChannel = FlutterEventChannel(name: Constants.EventNames.hr, binaryMessenger: registrar.messenger())
         hrEventChannel.setStreamHandler(hrStreamHandler)
         instance.api.deviceHrObserver = hrStreamHandler
+        let ecgEventChannel = FlutterEventChannel(name: Constants.EventNames.ecg, binaryMessenger: registrar.messenger())
+        let ecgStreamHandler = EcgStreamHandler(ecgDisposable: instance.ecgDisposable, api: instance.api)
+        ecgEventChannel.setStreamHandler(ecgStreamHandler)
     }
 
     

@@ -9,4 +9,5 @@ abstract class EventName {
   static const String hrBroadcast = "hrBroadcast";
   static const String acc = "acc";
   static const String hr = "hr";
+  static const String ecg = "ecg";
 }

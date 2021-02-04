@@ -136,3 +136,71 @@ public class HrStreamHandler: NSObject, FlutterStreamHandler, PolarBleApiDeviceH
         }
     }
 }
+
+public class EcgStreamHandler: NSObject, FlutterStreamHandler
+ {
+    
+    var eventSink: FlutterEventSink?
+    var ecgDisposable: Disposable?
+    var api: PolarBleApi
+    
+    init(ecgDisposable: Disposable?, api: PolarBleApi){
+        self.ecgDisposable = ecgDisposable
+        self.api = api
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        guard let args = arguments else {
+            return nil
+        }
+        if let deviceId = args as? String {
+            print("Params received on iOS = \(deviceId)")
+            if self.ecgDisposable == nil {
+//                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])
+//                NSLog("settings: \(customSettings.settings)")
+                self.ecgDisposable = api.requestEcgSettings(deviceId)
+                    .asObservable()
+                    .flatMap({ (settings) -> Observable<PolarEcgData> in
+                        return self.api.startEcgStreaming(deviceId, settings: settings.maxSettings())
+                    })
+                    .observe(on: MainScheduler.instance)
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for µv in data.samples {
+                                NSLog("    µV: \(µv)")
+                            }
+                            let ecgDict : [String: Any] = [ "samples":data.samples,"timestamp": data.timeStamp]
+                            let ecgJsonData = try! JSONSerialization.data(withJSONObject: ecgDict, options: [])
+                            let ecgJsonString = String(data: ecgJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
+                            events(ecgJsonString)
+                        case .error(let err):
+                            NSLog("ECG error: \(err)")
+                            events(FlutterError(code: "ECGStreamHandler.onListen",
+                                                message: err.localizedDescription,
+                                                details: nil))
+                            self.ecgDisposable = nil
+                        case .completed:
+                            break
+                        }
+                    }
+            } else {
+                self.ecgDisposable?.dispose()
+                self.ecgDisposable = nil
+            }
+        } else {
+            events(FlutterError(code: "-1", message: "iOS could not extract " +
+                                    "flutter arguments in method: EcgStreamHandler.onListen", details: nil))
+        }
+        return nil
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        self.eventSink = nil
+        self.ecgDisposable?.dispose()
+        self.ecgDisposable = nil
+        return nil
+    }
+    
+}
