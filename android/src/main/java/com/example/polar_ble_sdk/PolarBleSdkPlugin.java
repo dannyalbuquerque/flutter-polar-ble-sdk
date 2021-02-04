@@ -70,6 +70,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   Disposable ecgDisposable;
 
   private Result connectResult;
+  private Result disconnectResult;
 
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -227,7 +228,8 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       String deviceId = call.argument("deviceId");
       try {
         api.disconnectFromDevice(deviceId);
-        result.success(null);
+        disconnectResult = result;
+        //result.success(null);
       } catch (PolarInvalidArgument polarInvalidArgument) {
         polarInvalidArgument.printStackTrace();
         result.error("PolarInvalidArgument", polarInvalidArgument.getMessage(), null);
@@ -278,6 +280,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void deviceConnecting(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d(TAG, "CONNECTING: " + polarDeviceInfo.deviceId);
+        if(disconnectResult != null){
+          disconnectResult.success(null);
+          disconnectResult = null;
+        }
       }
 
       @Override
