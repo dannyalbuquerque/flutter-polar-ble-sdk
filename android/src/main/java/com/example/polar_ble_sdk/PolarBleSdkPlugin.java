@@ -69,6 +69,8 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   Disposable accDisposable;
   Disposable ecgDisposable;
 
+  private Result connectResult;
+
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "polar_ble_sdk");
@@ -214,7 +216,8 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       String deviceId = call.argument("deviceId");
       try {
         api.connectToDevice(deviceId);
-        result.success(null);
+        connectResult = result;
+        //result.success(null);
       } catch (PolarInvalidArgument polarInvalidArgument) {
         polarInvalidArgument.printStackTrace();
         result.error("PolarInvalidArgument", polarInvalidArgument.getMessage(), null);
@@ -266,6 +269,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d(TAG, "CONNECTED: " + polarDeviceInfo.deviceId);
+        if(connectResult != null){
+          connectResult.success(null);
+          connectResult = null;
+        }
       }
 
       @Override
