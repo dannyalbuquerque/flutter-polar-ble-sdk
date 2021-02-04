@@ -14,6 +14,7 @@ export 'hr_data.dart';
 export 'ecg_data.dart';
 
 const String POLAR_H10 = 'Polar H10';
+const Duration DEFAULT_TIMEOUT = Duration(seconds: 10);
 
 class PolarBleSdk {
   final _channel = MethodChannel('polar_ble_sdk');
@@ -23,17 +24,17 @@ class PolarBleSdk {
   final _ecgEventChannel = EventChannel(EventName.ecg);
 
   Future<void> connect(String deviceId) async {
-    await _channel.invokeMethod(MethodName.connect, {"deviceId":deviceId});
+    await _channel.invokeMethod(MethodName.connect, {"deviceId":deviceId}).timeout(DEFAULT_TIMEOUT);
     return;
   }
 
   Future<void> disconnect(String deviceId) async {
-    await _channel.invokeMethod(MethodName.disconnect, {"deviceId":deviceId});
+    await _channel.invokeMethod(MethodName.disconnect, {"deviceId":deviceId}).timeout(DEFAULT_TIMEOUT);
     return;
  }
 
   Future<void> autoconnect() async {
-    await _channel.invokeMethod(MethodName.autoconnect);
+    await _channel.invokeMethod(MethodName.autoconnect).timeout(DEFAULT_TIMEOUT);
     return;
   }
 

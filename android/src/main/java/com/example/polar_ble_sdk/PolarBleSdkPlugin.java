@@ -83,7 +83,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void onListen(Object arguments, EventChannel.EventSink events) {
         Log.d(TAG, EventName.hrBroadcast+ " onListen");
-        if (broadcastDisposable == null) {
+        if (broadcastDisposable != null)  {
+        broadcastDisposable.dispose();
+        broadcastDisposable = null;
+      }
           broadcastDisposable = api.startListenForPolarHrBroadcasts(null).subscribe(
                   polarBroadcastData -> {
                     Log.d(TAG, "HR BROADCAST " +
@@ -101,18 +104,15 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                     events.endOfStream();
                   }
           );
-        } else {
-          broadcastDisposable.dispose();
-          broadcastDisposable = null;
-          Log.d(TAG, "broadcast disposed");
-        }
+
       }
       @Override
       public void onCancel(Object arguments) {
         Log.d(TAG, EventName.hrBroadcast+ " onCancel");
-        broadcastDisposable.dispose();
-        broadcastDisposable = null;
-        Log.d(TAG, "broadcast disposed");
+        if (broadcastDisposable != null)  {
+          broadcastDisposable.dispose();
+          broadcastDisposable = null;
+        }
       }
     });
     accEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.acc);
