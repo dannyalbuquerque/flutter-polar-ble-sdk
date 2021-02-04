@@ -15,4 +15,9 @@ class EcgData {
     data['timestamp'] = this.timestamp;
     return data;
   }
+
+  @override
+  String toString() {
+    return "yVs: ${samples.toString()} @$timestamp";
+  }
 }

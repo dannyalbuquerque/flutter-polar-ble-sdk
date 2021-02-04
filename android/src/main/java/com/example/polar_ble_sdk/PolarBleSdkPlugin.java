@@ -4,6 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -167,8 +169,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                   .toFlowable()
                   .flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) polarEcgSettings -> {
                     PolarSensorSetting sensorSetting = polarEcgSettings.maxSettings();
+                    Log.d(TAG, "ECG settings: " + polarEcgSettings.toString());
                     return api.startEcgStreaming(deviceId, sensorSetting);
-                  }).subscribe(
+                  }).observeOn(AndroidSchedulers.mainThread())
+                  .subscribe(
                           polarEcgData -> {
                             for (Integer microVolts : polarEcgData.samples) {
                               Log.d(TAG, "    yV: " + microVolts);
@@ -327,7 +331,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
 
       @Override
       public void hrNotificationReceived(@NonNull String identifier, @NonNull PolarHrData data) {
-        Log.d(TAG, "HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
+        //Log.d(TAG, "HR value: " + data.hr + " rrsMs: " + data.rrsMs + " rr: " + data.rrs + " contact: " + data.contactStatus + "," + data.contactStatusSupported);
         hrDataSubject.onNext(data);
       }
 

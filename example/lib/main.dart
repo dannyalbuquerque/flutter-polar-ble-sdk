@@ -25,6 +25,10 @@ class _MyAppState extends State<MyApp> {
   HrData _lastHrData;
   EcgData _lastEcgData;
 
+  StreamSubscription accSubscription;
+  StreamSubscription hrSubscription;
+  StreamSubscription ecgSubscription;
+
   @override
   void initState() {
     _checkPermissions();
@@ -126,8 +130,15 @@ class _MyAppState extends State<MyApp> {
   }
 
   void acc() {
+    if(accSubscription != null){
+      accSubscription.cancel();
+      accSubscription = null;
+              setState(() {
+          _lastAccData = null;
+        });
+    }else{
     try {
-      polarBleSdk.acc(deviceIdCtrl.text).listen((accData) {
+      accSubscription = polarBleSdk.acc(deviceIdCtrl.text).listen((accData) {
         print(accData.toString());
         setState(() {
           _lastAccData = accData;
@@ -136,11 +147,20 @@ class _MyAppState extends State<MyApp> {
     }catch (e,stack){
       print(stack.toString());
     }
+    }
+
   }
 
     void hr() {
+          if(hrSubscription != null){
+      hrSubscription.cancel();
+      hrSubscription = null;
+              setState(() {
+          _lastHrData = null;
+        });
+    }else{
     try {
-      polarBleSdk.hr(deviceIdCtrl.text).listen((hrData) {
+      hrSubscription =  polarBleSdk.hr(deviceIdCtrl.text).listen((hrData) {
         print(hrData.toString());
         setState(() {
           _lastHrData = hrData;
@@ -151,11 +171,19 @@ class _MyAppState extends State<MyApp> {
     }catch (e,stack){
       print(stack.toString());
     }
+    }
   }
 
       void ecg() {
+                  if(ecgSubscription != null){
+      ecgSubscription.cancel();
+      ecgSubscription = null;
+              setState(() {
+          _lastEcgData = null;
+        });
+    }else{
     try {
-      polarBleSdk.ecg(deviceIdCtrl.text).listen((ecgData) {
+      ecgSubscription =  polarBleSdk.ecg(deviceIdCtrl.text).listen((ecgData) {
         print(ecgData.toString());
         setState(() {
           _lastEcgData = ecgData;
@@ -167,4 +195,5 @@ class _MyAppState extends State<MyApp> {
       print(stack.toString());
     }
   }
+      }
 }
