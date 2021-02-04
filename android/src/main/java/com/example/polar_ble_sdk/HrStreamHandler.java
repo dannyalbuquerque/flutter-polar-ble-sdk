@@ -29,7 +29,7 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
 
     @Override
     public void onListen(Object arguments, EventChannel.EventSink events) {
-        if (hrDisposable == null)   {
+        if (hrDisposable != null)   {
         hrDisposable.dispose();
         hrDisposable = null;
     }
@@ -56,7 +56,7 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
     }
     @Override
     public void onCancel(Object arguments) {
-        if (hrDisposable == null)   {
+        if (hrDisposable != null)   {
             hrDisposable.dispose();
             hrDisposable = null;
         }

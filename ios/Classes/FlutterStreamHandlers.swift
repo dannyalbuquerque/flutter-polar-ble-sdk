@@ -21,7 +21,8 @@ public class AccStreamHandler: NSObject, FlutterStreamHandler
         }
         if let deviceId = args as? String {
             print("Params received on iOS = \(deviceId)")
-            if self.accDisposable == nil {
+            self.accDisposable?.dispose()
+            self.accDisposable = nil
                 let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])
                 NSLog("settings: \(customSettings.settings)")
                 self.accDisposable = api.startAccStreaming(deviceId, settings: customSettings).observe(on: MainScheduler.instance)
@@ -45,10 +46,7 @@ public class AccStreamHandler: NSObject, FlutterStreamHandler
                             break
                         }
                     }
-            } else {
-                self.accDisposable?.dispose()
-                self.accDisposable = nil
-            }
+            
         } else {
             events(FlutterError(code: "-1", message: "iOS could not extract " +
                                     "flutter arguments in method: AccStreamHandler.onListen", details: nil))
@@ -78,7 +76,8 @@ public class HrBroadcastStreamHandler: NSObject, FlutterStreamHandler {
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
-        if self.hrBroadcastDisposable == nil {
+        self.hrBroadcastDisposable?.dispose()
+        self.hrBroadcastDisposable = nil
             self.hrBroadcastDisposable = api.startListenForPolarHrBroadcasts(nil)
                 .observe(on: MainScheduler.instance)
                 .subscribe{ e in
@@ -96,10 +95,7 @@ public class HrBroadcastStreamHandler: NSObject, FlutterStreamHandler {
                         events(broadcast.hr)
                     }
                 }
-        } else {
-            self.hrBroadcastDisposable?.dispose()
-            self.hrBroadcastDisposable = nil
-        }
+        
         return nil
     }
     
@@ -156,7 +152,8 @@ public class EcgStreamHandler: NSObject, FlutterStreamHandler
         }
         if let deviceId = args as? String {
             print("Params received on iOS = \(deviceId)")
-            if self.ecgDisposable == nil {
+            self.ecgDisposable?.dispose()
+            self.ecgDisposable = nil
 //                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])
 //                NSLog("settings: \(customSettings.settings)")
                 self.ecgDisposable = api.requestEcgSettings(deviceId)
@@ -185,10 +182,7 @@ public class EcgStreamHandler: NSObject, FlutterStreamHandler
                             break
                         }
                     }
-            } else {
-                self.ecgDisposable?.dispose()
-                self.ecgDisposable = nil
-            }
+            
         } else {
             events(FlutterError(code: "-1", message: "iOS could not extract " +
                                     "flutter arguments in method: EcgStreamHandler.onListen", details: nil))
