@@ -296,6 +296,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         Log.d(TAG, "ACC READY: " + identifier);
         // acc streaming can be started now if needed
         accReadySubject.onNext(true);
+        if(connectResult != null){
+          connectResult.success(null);
+          connectResult = null;
+        }
       }
 
       @Override
@@ -331,10 +335,6 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void batteryLevelReceived(@NonNull String identifier, int level) {
         Log.d(TAG, "BATTERY LEVEL: " + level);
-        if(connectResult != null){
-          connectResult.success(null);
-          connectResult = null;
-        }
       }
 
       @Override
