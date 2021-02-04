@@ -32,6 +32,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         instance.api.logger = instance
         instance.api.cccWriteObserver = instance
         instance.api.polarFilter(false)
+        instance.api.automaticReconnection = false;
         NSLog("\(PolarBleApiDefaultImpl.versionInfo())")
         let hrBroadcastEventChannel = FlutterEventChannel(name: Constants.EventNames.hrBroadcast, binaryMessenger: registrar.messenger())
         let hrBroadcastStreamHandler = HrBroadcastStreamHandler(hrBroadcastDisposable: instance.broadcastDisposable, api: instance.api)

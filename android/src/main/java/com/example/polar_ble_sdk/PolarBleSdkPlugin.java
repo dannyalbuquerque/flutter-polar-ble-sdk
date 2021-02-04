@@ -1,11 +1,6 @@
 package com.example.polar_ble_sdk;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,26 +9,23 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reactivestreams.Publisher;
 
-import java.sql.Timestamp;
-import java.util.Observable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.plugins.activity.ActivityAware;
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import io.reactivex.rxjava3.subjects.Subject;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
@@ -41,10 +33,7 @@ import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
-import polar.com.sdk.api.model.PolarExerciseEntry;
 import polar.com.sdk.api.model.PolarHrData;
-import polar.com.sdk.api.model.PolarOhrPPGData;
-import polar.com.sdk.api.model.PolarOhrPPIData;
 import polar.com.sdk.api.model.PolarSensorSetting;
 
 /** PolarBleSdkPlugin */
@@ -61,6 +50,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private EventChannel hrEventChannel;
   private EventChannel ecgEventChannel;
   private BehaviorSubject<PolarHrData> hrDataSubject = BehaviorSubject.create();
+  private BehaviorSubject<Boolean> accReadySubject = BehaviorSubject.create();
 
   private Context context;
   private PolarBleApi api;
@@ -100,7 +90,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                     events.error(TAG, throwable.getLocalizedMessage(), null);
                   },
                   () -> {
-                    Log.d(TAG, "complete");
+                    Log.d(TAG, "HR broadcast complete");
                     events.endOfStream();
                   }
           );
@@ -125,32 +115,33 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
             accDisposable = null;
           }
           String deviceId = arguments.toString();
-          accDisposable = api.requestAccSettings(deviceId)
-                  .toFlowable()
-                  .flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
-                    PolarSensorSetting sensorSetting = settings.maxSettings();
-                    return api.startAccStreaming(deviceId, sensorSetting);
-                  }).observeOn(AndroidSchedulers.mainThread())
-                  .subscribe(
-                          polarAccelerometerData -> {
-                            for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccelerometerData.samples) {
-                              Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
-                              JSONObject json = new JSONObject();
-                              json.put("x", data.x);
-                              json.put("y", data.y);
-                              json.put("z", data.z);
-                              json.put("timestamp", polarAccelerometerData.timeStamp);
-                              events.success(json.toString());
-                            }
-                          },
-                          throwable -> {
-                            Log.e(TAG, "" + throwable.getLocalizedMessage());
-                            events.error(TAG, throwable.getLocalizedMessage(), null);
-                          },
-                          () -> {
-                            Log.d(TAG, "complete");
-                            events.endOfStream();
-                          }                  );
+        Map<PolarSensorSetting.SettingType, Integer> settings = new HashMap();
+        settings.put(PolarSensorSetting.SettingType.RANGE, 2);
+        settings.put(PolarSensorSetting.SettingType.SAMPLE_RATE, 25);
+        settings.put(PolarSensorSetting.SettingType.RESOLUTION, 16);
+        PolarSensorSetting customSettings = new PolarSensorSetting(settings);
+        accDisposable = api.startAccStreaming(deviceId, customSettings).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        polarAccelerometerData -> {
+                          for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccelerometerData.samples) {
+                            Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
+                            JSONObject json = new JSONObject();
+                            json.put("x", data.x);
+                            json.put("y", data.y);
+                            json.put("z", data.z);
+                            json.put("timestamp", polarAccelerometerData.timeStamp);
+                            events.success(json.toString());
+                          }
+                        },
+                        throwable -> {
+                          Log.e(TAG, "" + throwable.getLocalizedMessage());
+                          events.error(TAG, throwable.getLocalizedMessage(), null);
+                        },
+                        () -> {
+                          Log.d(TAG, "ACC complete");
+                          events.endOfStream();
+                        }                  );
+        api.startAccStreaming(deviceId, customSettings);
 
       }
       @Override
@@ -195,7 +186,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
                             events.error(TAG, throwable.getLocalizedMessage(), null);
                           },
                           () -> {
-                            Log.d(TAG, "complete");
+                            Log.d(TAG, "ECG complete");
                             events.endOfStream();
                           }
                   );
@@ -262,6 +253,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private void initialize(){
     Log.d(TAG, "context: " + context.toString());
     api = PolarBleApiDefaultImpl.defaultImplementation(context, PolarBleApi.ALL_FEATURES);
+    api.setAutomaticReconnection(false);
     api.setPolarFilter(false);
     api.setApiLogger(s -> Log.d(API_LOGGER_TAG, s));
     Log.d(TAG, "version: " + PolarBleApiDefaultImpl.versionInfo());
@@ -274,10 +266,6 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void deviceConnected(@NonNull PolarDeviceInfo polarDeviceInfo) {
         Log.d(TAG, "CONNECTED: " + polarDeviceInfo.deviceId);
-        if(connectResult != null){
-          connectResult.success(null);
-          connectResult = null;
-        }
       }
 
       @Override
@@ -307,6 +295,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       public void accelerometerFeatureReady(@NonNull String identifier) {
         Log.d(TAG, "ACC READY: " + identifier);
         // acc streaming can be started now if needed
+        accReadySubject.onNext(true);
       }
 
       @Override
@@ -342,7 +331,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       @Override
       public void batteryLevelReceived(@NonNull String identifier, int level) {
         Log.d(TAG, "BATTERY LEVEL: " + level);
-
+        if(connectResult != null){
+          connectResult.success(null);
+          connectResult = null;
+        }
       }
 
       @Override
