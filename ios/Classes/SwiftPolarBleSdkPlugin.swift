@@ -147,6 +147,8 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     // PolarBleApiDeviceInfoObserver
     public func batteryLevelReceived(_ identifier: String, batteryLevel: UInt) {
         NSLog("battery level updated: \(batteryLevel)")
+        connectResult?(nil)
+        connectResult = nil
     }
     
     public func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
@@ -161,7 +163,6 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     // PolarBleApiDeviceAccelerometerObserver
     public func accFeatureReady(_ identifier: String) {
         NSLog("ACC READY")
-        connectResult?(nil)
     }
     
     public func ohrPPGFeatureReady(_ identifier: String) {

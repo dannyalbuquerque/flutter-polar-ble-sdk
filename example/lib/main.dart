@@ -17,19 +17,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  TextEditingController deviceIdCtrl = TextEditingController(text: '370C0628');
+  TextEditingController deviceIdCtrl1 = TextEditingController(text: '370C0628');
+  TextEditingController deviceIdCtrl2 = TextEditingController(text: '7F01D527');
   PolarBleSdk polarBleSdk = PolarBleSdk();
   PermissionStatus _locationPermissionStatus = PermissionStatus.unknown;
-  int _lastHr;
-  AccelerometerData _lastAccData;
-  HrData _lastHrData;
-  EcgData _lastEcgData;
-  PpgData _lastPpgData;
+  Map<String, AccelerometerData> _lastAccData = Map();
+  Map<String, HrData> _lastHrData = Map();
+  Map<String, EcgData> _lastEcgData = Map();
+  Map<String, PpgData> _lastPpgData = Map();
 
-  StreamSubscription accSubscription;
-  StreamSubscription hrSubscription;
-  StreamSubscription ecgSubscription;
-  StreamSubscription ppgSubscription;
+  Map<String, StreamSubscription> accSubscriptions = Map();
+  Map<String, StreamSubscription> hrSubscriptions = Map();
+  Map<String, StreamSubscription> ecgSubscriptions = Map();
+  Map<String, StreamSubscription> ppgSubscriptions = Map();
 
   StreamSubscription searchSubscription;
   List<DeviceInfo> devices = [];
@@ -45,13 +45,14 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Scaffold(
           appBar: AppBar(
             bottom: TabBar(
               tabs: [
                 Tab(text: "Search"),
-                Tab(text: "Device"),
+                Tab(text: "Device 1"),
+                Tab(text: "Device 2"),
               ],
             ),
             title: const Text('PolarBleSdk example app'),
@@ -61,86 +62,8 @@ class _MyAppState extends State<MyApp> {
               ? TabBarView(
                   children: [
                     _buildSearchView(),
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Text('Device ID: '),
-                                SizedBox(width: 8),
-                                Expanded(
-                                    child: TextField(controller: deviceIdCtrl)),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                RaisedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      deviceIdCtrl.text = '7F01D527';
-                                    });
-                                  },
-                                  child: Text('OH1'),
-                                ),
-                                RaisedButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      deviceIdCtrl.text = '370C0628';
-                                    });
-                                  },
-                                  child: Text('H10'),
-                                ),
-                              ],
-                            ),
-                            RaisedButton(
-                              onPressed: connect,
-                              child: Text('Connect'),
-                            ),
-                            RaisedButton(
-                              onPressed: disconnect,
-                              child: Text('Disconnect'),
-                            ),
-                            RaisedButton(
-                              onPressed: autoconnect,
-                              child: Text('Autoconnect'),
-                            ),
-                            //RaisedButton(onPressed: hrBroadcast, child: Text('HR broadcast'),),
-                            RaisedButton(
-                              onPressed: acc,
-                              child: Text('ACC'),
-                            ),
-                            RaisedButton(
-                              onPressed: hr,
-                              child: Text('HR'),
-                            ),
-                            RaisedButton(
-                              onPressed: ecg,
-                              child: Text('ECG'),
-                            ),
-                            RaisedButton(
-                              onPressed: ppg,
-                              child: Text('PPG'),
-                            ),
-                            SizedBox(height: 32),
-                            _lastAccData != null
-                                ? Text('ACC: ${_lastAccData.toString()}')
-                                : Container(),
-                            _lastHrData != null
-                                ? Text('$_lastHrData')
-                                : Container(),
-                            _lastEcgData != null
-                                ? Text('$_lastEcgData')
-                                : Container(),
-                            _lastPpgData != null
-                                ? Text('$_lastPpgData')
-                                : Container(),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _buildDevice(deviceIdCtrl1),
+                    _buildDevice(deviceIdCtrl2),
                   ],
                 )
               : Center(child: Text('Location permission needed')),
@@ -184,7 +107,7 @@ class _MyAppState extends State<MyApp> {
                 return Container();
               return ListTile(
                 onTap: () {
-                  deviceIdCtrl.text = device.deviceId;
+                  deviceIdCtrl1.text = device.deviceId;
                 },
                 title:
                     Text("${device.name.isNotEmpty ? device.name : 'unknown'}"),
@@ -213,6 +136,94 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  Widget _buildDevice(TextEditingController controller) {
+    String deviceId = controller.text;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(32, 16, 32, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Text('Device ID: '),
+                SizedBox(width: 8),
+                Expanded(child: TextField(controller: controller)),
+              ],
+            ),
+            Center(
+              child: Row(
+                children: [
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        controller.text = '7F01D527';
+                      });
+                    },
+                    child: Text('OH1'),
+                  ),
+                  SizedBox(width: 16),
+                  RaisedButton(
+                    onPressed: () {
+                      setState(() {
+                        controller.text = '370C0628';
+                      });
+                    },
+                    child: Text('H10'),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16),
+            RaisedButton(
+              onPressed: () => connect(deviceId),
+              child: Text('Connect'),
+            ),
+            RaisedButton(
+              onPressed: () => disconnect(deviceId),
+              child: Text('Disconnect'),
+            ),
+            // RaisedButton(
+            //   onPressed: autoconnect,
+            //   child: Text('Autoconnect'),
+            // ),
+            //RaisedButton(onPressed: hrBroadcast, child: Text('HR broadcast'),),
+            SizedBox(height: 16),
+            RaisedButton(
+              onPressed: () => hr(deviceId),
+              child: Text('HR'),
+            ),
+            RaisedButton(
+              onPressed: () => acc(deviceId),
+              child: Text('ACC'),
+            ),
+            RaisedButton(
+              onPressed: () => ecg(deviceId),
+              child: Text('ECG'),
+            ),
+            RaisedButton(
+              onPressed: () => ppg(deviceId),
+              child: Text('PPG'),
+            ),
+            SizedBox(height: 32),
+            _lastAccData[deviceId] != null
+                ? Text('$deviceId: ${_lastAccData[deviceId].toString()}')
+                : Container(),
+            _lastHrData[deviceId] != null
+                ? Text('$deviceId: ${_lastHrData[deviceId].toString()}')
+                : Container(),
+            _lastEcgData[deviceId] != null
+                ? Text('$deviceId: ${_lastEcgData[deviceId].toString()}')
+                : Container(),
+            _lastPpgData[deviceId] != null
+                ? Text('$deviceId: ${_lastPpgData[deviceId].toString()}')
+                : Container(),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _checkPermissions() async {
     if (Platform.isAndroid) {
       var permissionStatus = await PermissionHandler()
@@ -228,66 +239,80 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void connect() async {
+  void connect(String deviceId) async {
     try {
-      await polarBleSdk.connect(deviceIdCtrl.text);
-      print('connected');
+      await polarBleSdk.connect(deviceId);
+      print('connected to $deviceId');
     } catch (e, stack) {
       print(stack.toString());
     }
   }
 
-  void disconnect() async {
+  void disconnect(String deviceId) async {
     try {
-      await polarBleSdk.disconnect(deviceIdCtrl.text);
-      print('disconnected');
-    } catch (e, stack) {
-      print(stack.toString());
-    }
-  }
-
-  void autoconnect() async {
-    try {
-      await polarBleSdk.autoconnect();
-    } catch (e, stack) {
-      print(stack.toString());
-    }
-  }
-
-  void hrBroadcast() {
-    try {
-      polarBleSdk.hrBroadcast().listen(
-        (hr) {
-          print(hr);
-          setState(() {
-            _lastHr = hr;
-          });
-        },
-        onError: (e) {
-          print(e);
-        },
-        onDone: () => print('done'),
-        cancelOnError: true,
-      );
-    } catch (e, stack) {
-      print(stack.toString());
-    }
-  }
-
-  void acc() {
-    if (accSubscription != null) {
-      accSubscription.cancel();
-      accSubscription = null;
+      await polarBleSdk.disconnect(deviceId);
+      hrSubscriptions[deviceId]?.cancel();
+      accSubscriptions[deviceId]?.cancel();
+      ecgSubscriptions[deviceId]?.cancel();
+      ppgSubscriptions[deviceId]?.cancel();
+      hrSubscriptions.remove(deviceId);
+      accSubscriptions.remove(deviceId);
+      ecgSubscriptions.remove(deviceId);
+      ppgSubscriptions.remove(deviceId);
       setState(() {
-        _lastAccData = null;
+        _lastHrData.remove(deviceId);
+        _lastAccData.remove(deviceId);
+        _lastEcgData.remove(deviceId);
+        _lastPpgData.remove(deviceId);
+      });
+      print('disconnected of $deviceId');
+    } catch (e, stack) {
+      print(stack.toString());
+    }
+  }
+
+  // void autoconnect() async {
+  //   try {
+  //     await polarBleSdk.autoconnect();
+  //   } catch (e, stack) {
+  //     print(stack.toString());
+  //   }
+  // }
+
+  // void hrBroadcast() {
+  //   try {
+  //     polarBleSdk.hrBroadcast().listen(
+  //       (hr) {
+  //         print(hr);
+  //         setState(() {
+  //           _lastHr = hr;
+  //         });
+  //       },
+  //       onError: (e) {
+  //         print(e);
+  //       },
+  //       onDone: () => print('done'),
+  //       cancelOnError: true,
+  //     );
+  //   } catch (e, stack) {
+  //     print(stack.toString());
+  //   }
+  // }
+
+  void acc(String deviceId) {
+    if (accSubscriptions[deviceId] != null) {
+      accSubscriptions[deviceId].cancel();
+      accSubscriptions[deviceId] = null;
+      setState(() {
+        _lastAccData[deviceId] = null;
       });
     } else {
       try {
-        accSubscription = polarBleSdk.acc(deviceIdCtrl.text).listen(
+        accSubscriptions[deviceId] = polarBleSdk.acc(deviceId).listen(
           (accData) {
             print(accData.toString());
             setState(() {
-              _lastAccData = accData;
+              _lastAccData[deviceId] = accData;
             });
           },
           onError: (e) => print(e),
@@ -300,20 +325,20 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void hr() {
-    if (hrSubscription != null) {
-      hrSubscription.cancel();
-      hrSubscription = null;
+  void hr(String deviceId) {
+    if (hrSubscriptions[deviceId] != null) {
+      hrSubscriptions[deviceId].cancel();
+      hrSubscriptions.remove(deviceId);
       setState(() {
         _lastHrData = null;
       });
     } else {
       try {
-        hrSubscription = polarBleSdk.hr(deviceIdCtrl.text).listen(
+        hrSubscriptions[deviceId] = polarBleSdk.hr(deviceId).listen(
           (hrData) {
             print(hrData.toString());
             setState(() {
-              _lastHrData = hrData;
+              _lastHrData[deviceId] = hrData;
             });
           },
           onError: (e) {
@@ -328,20 +353,20 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void ecg() {
-    if (ecgSubscription != null) {
-      ecgSubscription.cancel();
-      ecgSubscription = null;
+  void ecg(String deviceId) {
+    if (ecgSubscriptions[deviceId] != null) {
+      ecgSubscriptions[deviceId].cancel();
+      ecgSubscriptions[deviceId] = null;
       setState(() {
-        _lastEcgData = null;
+        _lastEcgData[deviceId] = null;
       });
     } else {
       try {
-        ecgSubscription = polarBleSdk.ecg(deviceIdCtrl.text).listen(
+        ecgSubscriptions[deviceId] = polarBleSdk.ecg(deviceId).listen(
           (ecgData) {
             print(ecgData.toString());
             setState(() {
-              _lastEcgData = ecgData;
+              _lastEcgData[deviceId] = ecgData;
             });
           },
           onError: (e) {
@@ -356,20 +381,20 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void ppg() {
-    if (ppgSubscription != null) {
-      ppgSubscription.cancel();
-      ppgSubscription = null;
+  void ppg(String deviceId) {
+    if (ppgSubscriptions[deviceId] != null) {
+      ppgSubscriptions[deviceId].cancel();
+      ppgSubscriptions[deviceId] = null;
       setState(() {
         _lastPpgData = null;
       });
     } else {
       try {
-        ppgSubscription = polarBleSdk.ppg(deviceIdCtrl.text).listen(
+        ppgSubscriptions[deviceId] = polarBleSdk.ppg(deviceId).listen(
           (ppgData) {
             print(ppgData.toString());
             setState(() {
-              _lastPpgData = ppgData;
+              _lastPpgData[deviceId] = ppgData;
             });
           },
           onError: (e) {
