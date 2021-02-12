@@ -292,7 +292,7 @@ public class SearchStreamHandler: NSObject, FlutterStreamHandler
                         switch e {
                         case .next(let deviceInfo):
                             let searchDict : [String: Any] = [ "deviceId":deviceInfo.deviceId,
-                                "address":deviceInfo.address,
+                                                               "address":deviceInfo.address.uuidString,
                                 "rssi":deviceInfo.rssi,
                                 "name":deviceInfo.name,
                                 "connectable":deviceInfo.connectable,
