@@ -198,3 +198,69 @@ public class EcgStreamHandler: NSObject, FlutterStreamHandler
     }
     
 }
+
+public class PpgStreamHandler: NSObject, FlutterStreamHandler
+ {
+    
+    var eventSink: FlutterEventSink?
+    var ppgDisposable: Disposable?
+    var api: PolarBleApi
+    
+    init(ppgDisposable: Disposable?, api: PolarBleApi){
+        self.ppgDisposable = ppgDisposable
+        self.api = api
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        guard let args = arguments else {
+            return nil
+        }
+        if let deviceId = args as? String {
+            print("Params received on iOS = \(deviceId)")
+            self.ppgDisposable?.dispose()
+            self.ppgDisposable = nil
+//                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])
+//                NSLog("settings: \(customSettings.settings)")
+                self.ppgDisposable = api.requestPpgSettings(deviceId)
+                    .asObservable()
+                    .flatMap({ (settings) -> Observable<PolarPpgData> in
+                        return self.api.startOhrPPGStreaming(deviceId, settings: settings.maxSettings())
+                    })
+                    .observe(on: MainScheduler.instance)
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            for item in data.samples {
+                                NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2)")
+                            }
+                            let ppgDict : [String: Any] = [ "samples":data.samples,"timestamp": data.timeStamp]
+                            let ppgJsonData = try! JSONSerialization.data(withJSONObject: ppgDict, options: [])
+                            let ppgJsonString = String(data: ppgJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
+                            events(ppgJsonString)
+                        case .error(let err):
+                            NSLog("PPG error: \(err)")
+                            events(FlutterError(code: "PpgStreamHandler.onListen",
+                                                message: err.localizedDescription,
+                                                details: nil))
+                            self.ppgDisposable = nil
+                        case .completed:
+                            break
+                        }
+                    }
+            
+        } else {
+            events(FlutterError(code: "-1", message: "iOS could not extract " +
+                                    "flutter arguments in method: PpgStreamHandler.onListen", details: nil))
+        }
+        return nil
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        self.eventSink = nil
+        self.ppgDisposable?.dispose()
+        self.ppgDisposable = nil
+        return nil
+    }
+    
+}

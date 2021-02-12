@@ -5,4 +5,5 @@ public class EventName {
     static String acc = "acc";
     static String hr = "hr";
     static String ecg = "ecg";
+    static String ppg = "ppg";
 }

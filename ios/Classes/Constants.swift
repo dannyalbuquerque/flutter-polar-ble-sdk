@@ -9,6 +9,7 @@ struct Constants {
         static let  acc = "acc"
         static let  hr = "hr"
         static let  ecg = "ecg"
+        static let  ppg = "ppg"
     }
     struct Arguments {
         static let  deviceId = "deviceId"

@@ -9,7 +9,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reactivestreams.Publisher;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,6 +37,7 @@ import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
+import polar.com.sdk.api.model.PolarOhrPPGData;
 import polar.com.sdk.api.model.PolarSensorSetting;
 
 /** PolarBleSdkPlugin */
@@ -49,6 +53,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private EventChannel accEventChannel;
   private EventChannel hrEventChannel;
   private EventChannel ecgEventChannel;
+  private EventChannel ppgEventChannel;
   private BehaviorSubject<PolarHrData> hrDataSubject = BehaviorSubject.create();
   private BehaviorSubject<Boolean> accReadySubject = BehaviorSubject.create();
 
@@ -58,6 +63,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   Disposable autoConnectDisposable;
   Disposable accDisposable;
   Disposable ecgDisposable;
+  Disposable ppgDisposable;
 
   private Result connectResult;
   private Result disconnectResult;
@@ -201,6 +207,55 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         }
       }
     });
+    ppgEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.ppg);
+    ppgEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+      @Override
+      public void onListen(Object arguments, EventChannel.EventSink events) {
+        if (ppgDisposable != null) {
+          ppgDisposable.dispose();
+          ppgDisposable = null;
+        }
+        String deviceId = arguments.toString();
+        ppgDisposable = api.requestPpgSettings(deviceId)
+                .toFlowable()
+                .flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPpgSettings -> {
+                  PolarSensorSetting sensorSetting = polarPpgSettings.maxSettings();
+                  Log.d(TAG, "PPG settings: " + polarPpgSettings.toString());
+                  return api.startOhrPPGStreaming(deviceId, sensorSetting);
+                }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        polarOhrPPGData -> {
+                          List<Integer> samples = new ArrayList<Integer>();
+                          for (PolarOhrPPGData.PolarOhrPPGSample data : polarOhrPPGData.samples) {
+                            Log.d(TAG, "    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
+                            samples.addAll(data.ppgDataSamples);
+                            samples.add(data.ambient);
+                          }
+                          JSONObject json = new JSONObject();
+                          json.put("samples", new JSONArray(samples));
+                          json.put("timestamp", polarOhrPPGData.timeStamp);
+                          events.success(json.toString());
+                        },
+                        throwable -> {
+                          Log.e(TAG, "" + throwable.getLocalizedMessage());
+                          events.error(TAG, throwable.getLocalizedMessage(), null);
+                        },
+                        () -> {
+                          Log.d(TAG, "PPG complete");
+                          events.endOfStream();
+                        }
+                );
+
+      }
+      @Override
+      public void onCancel(Object arguments) {
+        Log.d(TAG, EventName.ppg+ " onCancel");
+        if (ppgDisposable != null) {
+          ppgDisposable.dispose();
+          ppgDisposable = null;
+        }
+      }
+    });
   }
 
   @Override
@@ -282,6 +337,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         Log.d(TAG, "DISCONNECTED: " + polarDeviceInfo.deviceId);
         ecgDisposable = null;
         accDisposable = null;
+        ppgDisposable = null;
         //ppgDisposable = null;
       }
 
@@ -295,11 +351,11 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       public void accelerometerFeatureReady(@NonNull String identifier) {
         Log.d(TAG, "ACC READY: " + identifier);
         // acc streaming can be started now if needed
-        accReadySubject.onNext(true);
-        if(connectResult != null){
-          connectResult.success(null);
-          connectResult = null;
-        }
+        //accReadySubject.onNext(true);
+        //if(connectResult != null){
+        //  connectResult.success(null);
+        //  connectResult = null;
+        //}
       }
 
       @Override

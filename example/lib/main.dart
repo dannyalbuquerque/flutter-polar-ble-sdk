@@ -24,10 +24,12 @@ class _MyAppState extends State<MyApp> {
   AccelerometerData _lastAccData;
   HrData _lastHrData;
   EcgData _lastEcgData;
+   PpgData _lastPpgData;
 
   StreamSubscription accSubscription;
   StreamSubscription hrSubscription;
   StreamSubscription ecgSubscription;
+  StreamSubscription ppgSubscription;
 
   @override
   void initState() {
@@ -55,6 +57,20 @@ class _MyAppState extends State<MyApp> {
                     Expanded(child: TextField(controller: deviceIdCtrl)),
                   ],
                 ),
+                Row(
+                  children: [
+                    RaisedButton(onPressed: (){
+                     setState(() {
+                       deviceIdCtrl.text = '7F01D527';
+                     });
+                    }, child: Text('OH1'),),
+                                        RaisedButton(onPressed: (){
+                     setState(() {
+                       deviceIdCtrl.text = '370C0628';
+                     });
+                    }, child: Text('H10'),),
+                  ],
+                ),
                 RaisedButton(onPressed: connect, child: Text('Connect'),),
                 RaisedButton(onPressed: disconnect, child: Text('Disconnect'),),
                 RaisedButton(onPressed: autoconnect, child: Text('Autoconnect'),),
@@ -62,10 +78,12 @@ class _MyAppState extends State<MyApp> {
                 RaisedButton(onPressed: acc, child: Text('ACC'),),
                 RaisedButton(onPressed: hr, child: Text('HR'),),
                 RaisedButton(onPressed: ecg, child: Text('ECG'),),
+                RaisedButton(onPressed: ppg, child: Text('PPG'),),
                 SizedBox(height: 32),
                 _lastAccData != null ? Text('ACC: ${_lastAccData.toString()}'): Container(),
                 _lastHrData != null ? Text('$_lastHrData'): Container(),
                 _lastEcgData != null ? Text('$_lastEcgData'): Container(),
+                _lastPpgData != null ? Text('$_lastPpgData'): Container(),
               ],
             ),
           ),
@@ -188,6 +206,29 @@ class _MyAppState extends State<MyApp> {
         print(ecgData.toString());
         setState(() {
           _lastEcgData = ecgData;
+        });
+      }, onError: (e) {
+        print(e);
+        }, onDone: ()=>print('done'), cancelOnError: true,);
+    }catch (e,stack){
+      print(stack.toString());
+    }
+  }
+      }
+
+            void ppg() {
+                  if(ppgSubscription != null){
+      ppgSubscription.cancel();
+      ppgSubscription = null;
+              setState(() {
+          _lastPpgData = null;
+        });
+    }else{
+    try {
+      ppgSubscription =  polarBleSdk.ppg(deviceIdCtrl.text).listen((ppgData) {
+        print(ppgData.toString());
+        setState(() {
+          _lastPpgData = ppgData;
         });
       }, onError: (e) {
         print(e);

@@ -1,10 +1,10 @@
-class EcgData {
-  List<int> samples;
+class PpgData{
+    List<int> samples;
   int timestamp;
 
-  EcgData({this.samples, this.timestamp});
+  PpgData({this.samples, this.timestamp});
 
-  EcgData.fromJson(Map<String, dynamic> json) {
+  PpgData.fromJson(Map<String, dynamic> json) {
     samples = json['samples'].cast<int>();
     timestamp = json['timestamp'];
   }
@@ -18,6 +18,6 @@ class EcgData {
 
   @override
   String toString() {
-    return "yVs (${samples.length}): ${samples.toString()} @$timestamp";
+    return "samples (${samples.length}): ${samples.toString()} @$timestamp";
   }
 }

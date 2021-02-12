@@ -19,6 +19,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     var autoConnectDisposable: Disposable?
     var accDisposable: Disposable?
     var ecgDisposable: Disposable?
+    var ppgDisposable: Disposable?
     
     var connectResult: FlutterResult?
     var disconnectResult: FlutterResult?
@@ -50,6 +51,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         let ecgEventChannel = FlutterEventChannel(name: Constants.EventNames.ecg, binaryMessenger: registrar.messenger())
         let ecgStreamHandler = EcgStreamHandler(ecgDisposable: instance.ecgDisposable, api: instance.api)
         ecgEventChannel.setStreamHandler(ecgStreamHandler)
+        let ppgEventChannel = FlutterEventChannel(name: Constants.EventNames.ppg, binaryMessenger: registrar.messenger())
+        let ppgStreamHandler = PpgStreamHandler(ppgDisposable: instance.ppgDisposable, api: instance.api)
+        ppgEventChannel.setStreamHandler(ppgStreamHandler)
     }
 
     
@@ -102,6 +106,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                let deviceId = myArgs[Constants.Arguments.deviceId] as? String{
                 print("Params received on iOS = \(deviceId)")
                 do{
+                    accDisposable?.dispose();
+                    ecgDisposable?.dispose();
+                    ppgDisposable?.dispose();
                     try self.api.disconnectFromDevice(deviceId)
                     disconnectResult = result
                     //result(nil)
