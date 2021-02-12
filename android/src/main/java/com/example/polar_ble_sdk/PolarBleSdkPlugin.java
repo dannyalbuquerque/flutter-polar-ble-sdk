@@ -54,8 +54,8 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private EventChannel hrEventChannel;
   private EventChannel ecgEventChannel;
   private EventChannel ppgEventChannel;
+  private EventChannel searchEventChannel;
   private BehaviorSubject<PolarHrData> hrDataSubject = BehaviorSubject.create();
-  private BehaviorSubject<Boolean> accReadySubject = BehaviorSubject.create();
 
   private Context context;
   private PolarBleApi api;
@@ -64,6 +64,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   Disposable accDisposable;
   Disposable ecgDisposable;
   Disposable ppgDisposable;
+  Disposable searchDisposable;
 
   private Result connectResult;
   private Result disconnectResult;
@@ -256,6 +257,45 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         }
       }
     });
+    searchEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.search);
+    searchEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
+      @Override
+      public void onListen(Object arguments, EventChannel.EventSink events) {
+        if (searchDisposable != null) {
+          searchDisposable.dispose();
+          searchDisposable = null;
+        }
+        searchDisposable = api.searchForDevice().observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        deviceInfo -> {
+                          JSONObject json = new JSONObject();
+                          json.put("deviceId", deviceInfo.deviceId);
+                          json.put("address", deviceInfo.address);
+                          json.put("rssi", deviceInfo.rssi);
+                          json.put("name", deviceInfo.name);
+                          json.put("connectable", deviceInfo.isConnectable);
+                          events.success(json.toString());
+                        },
+                        throwable -> {
+                          Log.e(TAG, "" + throwable.getLocalizedMessage());
+                          events.error(TAG, throwable.getLocalizedMessage(), null);
+                        },
+                        () -> {
+                          Log.d(TAG, "Search complete");
+                          events.endOfStream();
+                        }
+                );
+
+      }
+      @Override
+      public void onCancel(Object arguments) {
+        Log.d(TAG, EventName.search+ " onCancel");
+        if (searchDisposable != null) {
+          searchDisposable.dispose();
+          searchDisposable = null;
+        }
+      }
+    });
   }
 
   @Override
@@ -276,6 +316,10 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
       Log.d(TAG, MethodName.disconnect);
       String deviceId = call.argument("deviceId");
       try {
+
+        if(accDisposable != null && !accDisposable.isDisposed()) accDisposable.dispose();
+        if(ecgDisposable != null && !ecgDisposable.isDisposed()) ecgDisposable.dispose();
+        if(ppgDisposable != null && !ppgDisposable.isDisposed()) ppgDisposable.dispose();
         api.disconnectFromDevice(deviceId);
         disconnectResult = result;
         //result.success(null);

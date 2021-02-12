@@ -20,6 +20,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     var accDisposable: Disposable?
     var ecgDisposable: Disposable?
     var ppgDisposable: Disposable?
+    var searchDisposable: Disposable?
     
     var connectResult: FlutterResult?
     var disconnectResult: FlutterResult?
@@ -54,6 +55,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         let ppgEventChannel = FlutterEventChannel(name: Constants.EventNames.ppg, binaryMessenger: registrar.messenger())
         let ppgStreamHandler = PpgStreamHandler(ppgDisposable: instance.ppgDisposable, api: instance.api)
         ppgEventChannel.setStreamHandler(ppgStreamHandler)
+        let searchEventChannel = FlutterEventChannel(name: Constants.EventNames.search, binaryMessenger: registrar.messenger())
+        let searchStreamHandler = SearchStreamHandler(searchDisposable: instance.searchDisposable, api: instance.api)
+        searchEventChannel.setStreamHandler(searchStreamHandler)
     }
 
     

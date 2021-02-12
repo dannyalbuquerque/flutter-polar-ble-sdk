@@ -1,0 +1,9 @@
+{
+  "editor.fontSize": 12,
+  "window.zoomLevel": 1,
+  "debug.console.fontSize": 12,
+  "terminal.integrated.fontSize": 12,
+  "editor.formatOnSave": true,
+  "git.ignoreLimitWarning": true,
+  "editor.suggest.snippetsPreventQuickSuggestions": false
+}

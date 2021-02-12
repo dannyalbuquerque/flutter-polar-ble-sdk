@@ -6,4 +6,5 @@ public class EventName {
     static String hr = "hr";
     static String ecg = "ecg";
     static String ppg = "ppg";
+    static String search = "search";
 }

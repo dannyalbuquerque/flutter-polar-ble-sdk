@@ -269,3 +269,57 @@ public class PpgStreamHandler: NSObject, FlutterStreamHandler
     }
     
 }
+
+public class SearchStreamHandler: NSObject, FlutterStreamHandler
+ {
+    
+    var eventSink: FlutterEventSink?
+    var searchDisposable: Disposable?
+    var api: PolarBleApi
+    
+    init(searchDisposable: Disposable?, api: PolarBleApi){
+        self.searchDisposable = searchDisposable
+        self.api = api
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+            self.searchDisposable?.dispose()
+            self.searchDisposable = nil
+            self.searchDisposable = api.searchForDevice()
+                    .observe(on: MainScheduler.instance)
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let deviceInfo):
+                            let searchDict : [String: Any] = [ "deviceId":deviceInfo.deviceId,
+                                "address":deviceInfo.address,
+                                "rssi":deviceInfo.rssi,
+                                "name":deviceInfo.name,
+                                "connectable":deviceInfo.connectable,
+                            ]
+                            let searchJsonData = try! JSONSerialization.data(withJSONObject: searchDict, options: [])
+                            let searchJsonString = String(data: searchJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
+                            events(searchJsonString)
+                        case .error(let err):
+                            NSLog("Search error: \(err)")
+                            events(FlutterError(code: "SearchStreamHandler.onListen",
+                                                message: err.localizedDescription,
+                                                details: nil))
+                            self.searchDisposable = nil
+                        case .completed:
+                            break
+                        }
+                    }
+            
+    
+        return nil
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        self.eventSink = nil
+        self.searchDisposable?.dispose()
+        self.searchDisposable = nil
+        return nil
+    }
+    
+}

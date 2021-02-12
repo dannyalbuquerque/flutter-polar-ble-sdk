@@ -11,4 +11,5 @@ abstract class EventName {
   static const String hr = "hr";
   static const String ecg = "ecg";
   static const String ppg = "ppg";
+  static const String search = "search";
 }
