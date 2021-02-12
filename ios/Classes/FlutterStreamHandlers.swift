@@ -231,10 +231,15 @@ public class PpgStreamHandler: NSObject, FlutterStreamHandler
                     .subscribe{ e in
                         switch e {
                         case .next(let data):
+                            var samples = [Int32]()
                             for item in data.samples {
-                                NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2)")
+                                NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2), ambient: \(item.ambient)")
+                                samples.append(item.ppg0)
+                                samples.append(item.ppg1)
+                                samples.append(item.ppg2)
+                                samples.append(item.ambient)
                             }
-                            let ppgDict : [String: Any] = [ "samples":data.samples,"timestamp": data.timeStamp]
+                            let ppgDict : [String: Any] = [ "samples":samples,"timestamp": data.timeStamp]
                             let ppgJsonData = try! JSONSerialization.data(withJSONObject: ppgDict, options: [])
                             let ppgJsonString = String(data: ppgJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
                             events(ppgJsonString)
