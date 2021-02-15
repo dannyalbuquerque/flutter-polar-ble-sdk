@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
   Map<String, StreamSubscription> ppgSubscriptions = Map();
 
   StreamSubscription searchSubscription;
-  List<DeviceInfo> devices = [];
+  List<PolarDeviceInfo> devices = [];
   bool searchOnlyPolar = true;
 
   @override
