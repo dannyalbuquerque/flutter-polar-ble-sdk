@@ -3,10 +3,11 @@ import UIKit
 import RxSwift
 import PolarBleSdk
 import CoreBluetooth
+import streams_channel
 
 public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver,
                                      PolarBleApiPowerStateObserver,
-                                     //PolarBleApiDeviceHrObserver,
+                                     PolarBleApiDeviceHrObserver,
                                      PolarBleApiDeviceInfoObserver,
                                      PolarBleApiDeviceFeaturesObserver,
                                      PolarBleApiLogger,
@@ -15,16 +16,18 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     
     var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: Features.allFeatures.rawValue)
     
-    var broadcastDisposable: Disposable?
-    var autoConnectDisposable: Disposable?
-    var accDisposable: Disposable?
-    var ecgDisposable: Disposable?
-    var ppgDisposable: Disposable?
+    //var broadcastDisposable: Disposable?
+    //var autoConnectDisposable: Disposable?
+    var accDisposables = [String : Disposable?]()
+    var ecgDisposables = [String : Disposable?]()
+    var ppgDisposables = [String : Disposable?]()
     var searchDisposable: Disposable?
     
-    var connectResult: FlutterResult?
-    var disconnectResult: FlutterResult?
-        
+    var connectResults = [String : FlutterResult]()
+    var disconnectResults = [String : FlutterResult]()
+    
+    var hrDataSubjects = [String : PublishSubject<PolarHrData>]()
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "polar_ble_sdk", binaryMessenger: registrar.messenger())
         let instance = SwiftPolarBleSdkPlugin()
@@ -38,28 +41,39 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         instance.api.cccWriteObserver = instance
         instance.api.polarFilter(false)
         instance.api.automaticReconnection = false;
+        instance.api.deviceHrObserver = instance
         NSLog("\(PolarBleApiDefaultImpl.versionInfo())")
-        let hrBroadcastEventChannel = FlutterEventChannel(name: Constants.EventNames.hrBroadcast, binaryMessenger: registrar.messenger())
-        let hrBroadcastStreamHandler = HrBroadcastStreamHandler(hrBroadcastDisposable: instance.broadcastDisposable, api: instance.api)
-        hrBroadcastEventChannel.setStreamHandler(hrBroadcastStreamHandler)
-        let accEventChannel = FlutterEventChannel(name: Constants.EventNames.acc, binaryMessenger: registrar.messenger())
-        let accStreamHandler = AccStreamHandler(accDisposable: instance.accDisposable, api: instance.api)
-        accEventChannel.setStreamHandler(accStreamHandler)
-        let hrStreamHandler = HrStreamHandler()
-        let hrEventChannel = FlutterEventChannel(name: Constants.EventNames.hr, binaryMessenger: registrar.messenger())
-        hrEventChannel.setStreamHandler(hrStreamHandler)
-        instance.api.deviceHrObserver = hrStreamHandler
-        let ecgEventChannel = FlutterEventChannel(name: Constants.EventNames.ecg, binaryMessenger: registrar.messenger())
-        let ecgStreamHandler = EcgStreamHandler(ecgDisposable: instance.ecgDisposable, api: instance.api)
-        ecgEventChannel.setStreamHandler(ecgStreamHandler)
-        let ppgEventChannel = FlutterEventChannel(name: Constants.EventNames.ppg, binaryMessenger: registrar.messenger())
-        let ppgStreamHandler = PpgStreamHandler(ppgDisposable: instance.ppgDisposable, api: instance.api)
-        ppgEventChannel.setStreamHandler(ppgStreamHandler)
+        //        let hrBroadcastEventChannel = FlutterEventChannel(name: Constants.EventNames.hrBroadcast, binaryMessenger: registrar.messenger())
+        //        let hrBroadcastStreamHandler = HrBroadcastStreamHandler(hrBroadcastDisposable: instance.broadcastDisposable, api: instance.api)
+        //        hrBroadcastEventChannel.setStreamHandler(hrBroadcastStreamHandler)
+        let accStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.acc, binaryMessenger: registrar.messenger())
+        accStreamsChannel.setStreamHandlerFactory({ arguments in
+            let deviceId = arguments as! String
+            instance.accDisposables.updateValue(nil, forKey: deviceId)
+            return AccStreamHandler(accDisposable: instance.accDisposables[deviceId] ?? nil, api: instance.api)
+        })
+        let hrStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.hr, binaryMessenger: registrar.messenger())
+        hrStreamsChannel.setStreamHandlerFactory({ arguments in
+            let deviceId = arguments as! String
+            instance.hrDataSubjects.updateValue(PublishSubject.init(), forKey: deviceId)
+            return HrStreamHandler(hrDataSubject: instance.hrDataSubjects[deviceId]!)
+        })
+        let ecgStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.ecg, binaryMessenger: registrar.messenger())
+        ecgStreamsChannel.setStreamHandlerFactory({arguments in
+                                                    let deviceId = arguments as! String
+                                                    instance.ecgDisposables.updateValue(nil, forKey: deviceId)
+                                                    return EcgStreamHandler(ecgDisposable: instance.ecgDisposables[deviceId] ?? nil, api: instance.api
+                                                    )})
+        let ppgStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.ppg, binaryMessenger: registrar.messenger())
+        ppgStreamsChannel.setStreamHandlerFactory({arguments in
+            let deviceId = arguments as! String
+            instance.ppgDisposables.updateValue(nil, forKey: deviceId)
+            return PpgStreamHandler(ppgDisposable: instance.ppgDisposables[deviceId]  ?? nil, api: instance.api)
+        })
         let searchEventChannel = FlutterEventChannel(name: Constants.EventNames.search, binaryMessenger: registrar.messenger())
-        let searchStreamHandler = SearchStreamHandler(searchDisposable: instance.searchDisposable, api: instance.api)
-        searchEventChannel.setStreamHandler(searchStreamHandler)
+        searchEventChannel.setStreamHandler(SearchStreamHandler(searchDisposable: instance.searchDisposable, api: instance.api))
     }
-
+    
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch(call.method){
@@ -72,7 +86,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                 print("Params received on iOS = \(deviceId)")
                 do{
                     try self.api.connectToDevice(deviceId)
-                    connectResult = result;
+                    connectResults[deviceId] = result;
                     //result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
@@ -84,24 +98,24 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                                         "flutter arguments in method: (\(call.method)", details: nil))
             }
             break
-        case Constants.MethodNames.autoconnect:
-            autoConnectDisposable?.dispose()
-            autoConnectDisposable = api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil)
-                .subscribe{ e in
-                    switch e {
-                    case .completed:
-                        NSLog("auto connect search complete")
-                        result(nil)
-                    case .error(let err):
-                        NSLog("auto connect failed: \(err)")
-                        result(FlutterError(code: call.method,
-                                            message: err.localizedDescription,
-                                            details: nil))
-                    @unknown default:
-                        fatalError()
-                    }
-                }
-            break
+        //        case Constants.MethodNames.autoconnect:
+        //            autoConnectDisposable?.dispose()
+        //            autoConnectDisposable = api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil)
+        //                .subscribe{ e in
+        //                    switch e {
+        //                    case .completed:
+        //                        NSLog("auto connect search complete")
+        //                        result(nil)
+        //                    case .error(let err):
+        //                        NSLog("auto connect failed: \(err)")
+        //                        result(FlutterError(code: call.method,
+        //                                            message: err.localizedDescription,
+        //                                            details: nil))
+        //                    @unknown default:
+        //                        fatalError()
+        //                    }
+        //                }
+        //            break
         case Constants.MethodNames.disconnect:
             guard let args = call.arguments else {
                 return
@@ -110,11 +124,11 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                let deviceId = myArgs[Constants.Arguments.deviceId] as? String{
                 print("Params received on iOS = \(deviceId)")
                 do{
-                    accDisposable?.dispose();
-                    ecgDisposable?.dispose();
-                    ppgDisposable?.dispose();
+                    accDisposables[deviceId]??.dispose();
+                    ecgDisposables[deviceId]??.dispose();
+                    ppgDisposables[deviceId]??.dispose();
                     try self.api.disconnectFromDevice(deviceId)
-                    disconnectResult = result
+                    disconnectResults[deviceId] = result
                     //result(nil)
                 } catch let err {
                     result(FlutterError(code: call.method,
@@ -141,14 +155,19 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     
     public func deviceDisconnected(_ polarDeviceInfo: PolarDeviceInfo) {
         NSLog("DISCONNECTED: \(polarDeviceInfo)")
-        disconnectResult?(nil)
+        let deviceId = polarDeviceInfo.deviceId;
+        accDisposables[deviceId] = nil
+        ecgDisposables[deviceId] = nil
+        ppgDisposables[deviceId] = nil
+        disconnectResults[deviceId]?(nil)
+        disconnectResults[deviceId] = nil
     }
     
     // PolarBleApiDeviceInfoObserver
     public func batteryLevelReceived(_ identifier: String, batteryLevel: UInt) {
         NSLog("battery level updated: \(batteryLevel)")
-        connectResult?(nil)
-        connectResult = nil
+        connectResults[identifier]?(nil)
+        connectResults[identifier] = nil
     }
     
     public func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
@@ -199,5 +218,12 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     /// ccc write observer
     public func cccWrite(_ address: UUID, characteristic: CBUUID) {
         NSLog("ccc write: \(address) chr: \(characteristic)")
+    }
+    
+    public func hrValueReceived(_ identifier: String, data: PolarHrData) {
+        NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
+        if hrDataSubjects.keys.contains(identifier){
+            hrDataSubjects[identifier]?.onNext(data)
+        }
     }
 }

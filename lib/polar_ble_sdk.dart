@@ -7,6 +7,7 @@ import 'package:polar_ble_sdk/device_info.dart';
 import 'package:polar_ble_sdk/ecg_data.dart';
 import 'package:polar_ble_sdk/hr_data.dart';
 import 'package:polar_ble_sdk/ppg_data.dart';
+import 'package:streams_channel/streams_channel.dart';
 
 import 'accelerometer_data.dart';
 
@@ -22,11 +23,11 @@ const Duration DEFAULT_TIMEOUT = Duration(seconds: 10);
 
 class PolarBleSdk {
   final _channel = MethodChannel('polar_ble_sdk');
-  final _hrBroadcastEventChannel = EventChannel(EventName.hrBroadcast);
-  final _accEventChannel = EventChannel(EventName.acc);
-  final _hrEventChannel = EventChannel(EventName.hr);
-  final _ecgEventChannel = EventChannel(EventName.ecg);
-  final _ppgEventChannel = EventChannel(EventName.ppg);
+  //final _hrBroadcastEventChannel = EventChannel(EventName.hrBroadcast);
+  final _accStreamsChannel = StreamsChannel(EventName.acc);
+  final _hrStreamsChannel = StreamsChannel(EventName.hr);
+  final _ecgsearchStreamsChannel = StreamsChannel(EventName.ecg);
+  final _ppgsearchStreamsChannel = StreamsChannel(EventName.ppg);
   final _searchEventChannel = EventChannel(EventName.search);
 
   Future<void> connect(String deviceId) async {
@@ -41,37 +42,37 @@ class PolarBleSdk {
     return;
   }
 
-  Future<void> autoconnect() async {
-    await _channel
-        .invokeMethod(MethodName.autoconnect)
-        .timeout(DEFAULT_TIMEOUT);
-    return;
-  }
+  // Future<void> autoconnect() async {
+  //   await _channel
+  //       .invokeMethod(MethodName.autoconnect)
+  //       .timeout(DEFAULT_TIMEOUT);
+  //   return;
+  // }
 
-  Stream<dynamic> hrBroadcast() {
-    return _hrBroadcastEventChannel.receiveBroadcastStream();
-  }
+  // Stream<dynamic> hrBroadcast() {
+  //   return _hrBroadcastEventChannel.receiveBroadcastStream();
+  // }
 
   Stream<AccelerometerData> acc(String deviceId) {
-    return _accEventChannel
+    return _accStreamsChannel
         .receiveBroadcastStream(deviceId)
         .map((data) => AccelerometerData.fromJson(jsonDecode(data)));
   }
 
   Stream<HrData> hr(String deviceId) {
-    return _hrEventChannel
+    return _hrStreamsChannel
         .receiveBroadcastStream(deviceId)
         .map((data) => HrData.fromJson(jsonDecode(data)));
   }
 
   Stream<EcgData> ecg(String deviceId) {
-    return _ecgEventChannel
+    return _ecgsearchStreamsChannel
         .receiveBroadcastStream(deviceId)
         .map((data) => EcgData.fromJson(jsonDecode(data)));
   }
 
   Stream<PpgData> ppg(String deviceId) {
-    return _ppgEventChannel
+    return _ppgsearchStreamsChannel
         .receiveBroadcastStream(deviceId)
         .map((data) => PpgData.fromJson(jsonDecode(data)));
   }

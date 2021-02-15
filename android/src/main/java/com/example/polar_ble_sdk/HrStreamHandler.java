@@ -13,6 +13,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarSensorSetting;
@@ -20,10 +21,10 @@ import polar.com.sdk.api.model.PolarSensorSetting;
 public class HrStreamHandler implements EventChannel.StreamHandler {
     private static final String TAG = HrStreamHandler.class.getSimpleName();
 
-    private BehaviorSubject<PolarHrData> hrDataSubject;
+    private PublishSubject<PolarHrData> hrDataSubject;
     private Disposable hrDisposable;
 
-    public HrStreamHandler(BehaviorSubject<PolarHrData> hrDataSubject) {
+    public HrStreamHandler(PublishSubject<PolarHrData> hrDataSubject) {
         this.hrDataSubject = hrDataSubject;
     }
 
@@ -33,7 +34,6 @@ public class HrStreamHandler implements EventChannel.StreamHandler {
         hrDisposable.dispose();
         hrDisposable = null;
     }
-            String deviceId = arguments.toString();
             hrDisposable = hrDataSubject
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(

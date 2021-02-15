@@ -25,6 +25,7 @@ class _MyAppState extends State<MyApp> {
   Map<String, HrData> _lastHrData = Map();
   Map<String, EcgData> _lastEcgData = Map();
   Map<String, PpgData> _lastPpgData = Map();
+  Map<String, bool> connectedDevices = Map();
 
   Map<String, StreamSubscription> accSubscriptions = Map();
   Map<String, StreamSubscription> hrSubscriptions = Map();
@@ -176,11 +177,15 @@ class _MyAppState extends State<MyApp> {
             ),
             SizedBox(height: 16),
             RaisedButton(
-              onPressed: () => connect(deviceId),
+              onPressed: !connectedDevices.containsKey(deviceId)
+                  ? () => connect(deviceId)
+                  : null,
               child: Text('Connect'),
             ),
             RaisedButton(
-              onPressed: () => disconnect(deviceId),
+              onPressed: connectedDevices.containsKey(deviceId)
+                  ? () => disconnect(deviceId)
+                  : null,
               child: Text('Disconnect'),
             ),
             // RaisedButton(
@@ -190,32 +195,40 @@ class _MyAppState extends State<MyApp> {
             //RaisedButton(onPressed: hrBroadcast, child: Text('HR broadcast'),),
             SizedBox(height: 16),
             RaisedButton(
-              onPressed: () => hr(deviceId),
+              onPressed: connectedDevices.containsKey(deviceId)
+                  ? () => hr(deviceId)
+                  : null,
               child: Text('HR'),
             ),
             RaisedButton(
-              onPressed: () => acc(deviceId),
+              onPressed: connectedDevices.containsKey(deviceId)
+                  ? () => acc(deviceId)
+                  : null,
               child: Text('ACC'),
             ),
             RaisedButton(
-              onPressed: () => ecg(deviceId),
+              onPressed: connectedDevices.containsKey(deviceId)
+                  ? () => ecg(deviceId)
+                  : null,
               child: Text('ECG'),
             ),
             RaisedButton(
-              onPressed: () => ppg(deviceId),
+              onPressed: connectedDevices.containsKey(deviceId)
+                  ? () => ppg(deviceId)
+                  : null,
               child: Text('PPG'),
             ),
             SizedBox(height: 32),
-            _lastAccData[deviceId] != null
+            _lastAccData.containsKey(deviceId)
                 ? Text('$deviceId: ${_lastAccData[deviceId].toString()}')
                 : Container(),
-            _lastHrData[deviceId] != null
+            _lastHrData.containsKey(deviceId)
                 ? Text('$deviceId: ${_lastHrData[deviceId].toString()}')
                 : Container(),
-            _lastEcgData[deviceId] != null
+            _lastEcgData.containsKey(deviceId)
                 ? Text('$deviceId: ${_lastEcgData[deviceId].toString()}')
                 : Container(),
-            _lastPpgData[deviceId] != null
+            _lastPpgData.containsKey(deviceId)
                 ? Text('$deviceId: ${_lastPpgData[deviceId].toString()}')
                 : Container(),
           ],
@@ -242,6 +255,9 @@ class _MyAppState extends State<MyApp> {
   void connect(String deviceId) async {
     try {
       await polarBleSdk.connect(deviceId);
+      setState(() {
+        connectedDevices[deviceId] = true;
+      });
       print('connected to $deviceId');
     } catch (e, stack) {
       print(stack.toString());
@@ -250,7 +266,6 @@ class _MyAppState extends State<MyApp> {
 
   void disconnect(String deviceId) async {
     try {
-      await polarBleSdk.disconnect(deviceId);
       hrSubscriptions[deviceId]?.cancel();
       accSubscriptions[deviceId]?.cancel();
       ecgSubscriptions[deviceId]?.cancel();
@@ -265,7 +280,11 @@ class _MyAppState extends State<MyApp> {
         _lastEcgData.remove(deviceId);
         _lastPpgData.remove(deviceId);
       });
+      await polarBleSdk.disconnect(deviceId);
       print('disconnected of $deviceId');
+      setState(() {
+        connectedDevices.remove(deviceId);
+      });
     } catch (e, stack) {
       print(stack.toString());
     }
@@ -304,7 +323,7 @@ class _MyAppState extends State<MyApp> {
       accSubscriptions[deviceId].cancel();
       accSubscriptions[deviceId] = null;
       setState(() {
-        _lastAccData[deviceId] = null;
+        _lastAccData.remove(deviceId);
       });
     } else {
       try {
@@ -330,7 +349,7 @@ class _MyAppState extends State<MyApp> {
       hrSubscriptions[deviceId].cancel();
       hrSubscriptions.remove(deviceId);
       setState(() {
-        _lastHrData = null;
+        _lastHrData.remove(deviceId);
       });
     } else {
       try {
@@ -358,7 +377,7 @@ class _MyAppState extends State<MyApp> {
       ecgSubscriptions[deviceId].cancel();
       ecgSubscriptions[deviceId] = null;
       setState(() {
-        _lastEcgData[deviceId] = null;
+        _lastEcgData.remove(deviceId);
       });
     } else {
       try {
@@ -386,7 +405,7 @@ class _MyAppState extends State<MyApp> {
       ppgSubscriptions[deviceId].cancel();
       ppgSubscriptions[deviceId] = null;
       setState(() {
-        _lastPpgData = null;
+        _lastPpgData.remove(deviceId);
       });
     } else {
       try {

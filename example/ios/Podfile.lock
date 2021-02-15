@@ -4,11 +4,15 @@ PODS:
     - Flutter
   - polar_ble_sdk (0.0.1):
     - Flutter
+    - streams_channel
+  - streams_channel (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
   - polar_ble_sdk (from `.symlinks/plugins/polar_ble_sdk/ios`)
+  - streams_channel (from `.symlinks/plugins/streams_channel/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
@@ -17,11 +21,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler/ios"
   polar_ble_sdk:
     :path: ".symlinks/plugins/polar_ble_sdk/ios"
+  streams_channel:
+    :path: ".symlinks/plugins/streams_channel/ios"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   permission_handler: 8278954f2382902f63f00dd8828769c0bd6d511b
-  polar_ble_sdk: e01a4b5bf0604e92f43e97254fccceb4635d4d28
+  polar_ble_sdk: 2b38d52b0f1f8fb87c9978d21fb93fa42b9df401
+  streams_channel: 16855ffd0568eded9563b2fec6a1bfa94420b353
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
