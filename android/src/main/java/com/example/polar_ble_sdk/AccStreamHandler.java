@@ -41,7 +41,7 @@ public class AccStreamHandler implements EventChannel.StreamHandler {
                 .subscribe(
                         polarAccelerometerData -> {
                             for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccelerometerData.samples) {
-                                Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
+                                //Log.d(TAG, "    x: " + data.x + " y: " + data.y + " z: " + data.z);
                                 JSONObject json = new JSONObject();
                                 json.put("x", data.x);
                                 json.put("y", data.y);
