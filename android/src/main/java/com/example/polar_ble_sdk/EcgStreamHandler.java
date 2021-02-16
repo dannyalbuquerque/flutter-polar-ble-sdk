@@ -42,7 +42,7 @@ public class EcgStreamHandler implements EventChannel.StreamHandler {
                 .subscribe(
                         polarEcgData -> {
                             for (Integer microVolts : polarEcgData.samples) {
-                                Log.d(TAG, "    yV: " + microVolts);
+                                //Log.d(TAG, "    yV: " + microVolts);
                             }
                             JSONObject json = new JSONObject();
                             json.put("samples", new JSONArray(polarEcgData.samples));

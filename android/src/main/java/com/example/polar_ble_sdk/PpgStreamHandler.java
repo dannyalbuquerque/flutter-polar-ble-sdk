@@ -45,7 +45,7 @@ public class PpgStreamHandler implements EventChannel.StreamHandler {
                         polarOhrPPGData -> {
                             List<Integer> samples = new ArrayList<Integer>();
                             for (PolarOhrPPGData.PolarOhrPPGSample data : polarOhrPPGData.samples) {
-                                Log.d(TAG, "    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
+                                //Log.d(TAG, "    ppg0: " + data.ppg0 + " ppg1: " + data.ppg1 + " ppg2: " + data.ppg2 + "ambient: " + data.ambient);
                                 samples.addAll(data.ppgDataSamples);
                                 samples.add(data.ambient);
                             }
