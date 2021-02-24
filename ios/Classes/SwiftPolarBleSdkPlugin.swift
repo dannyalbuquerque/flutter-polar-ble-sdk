@@ -221,7 +221,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     }
     
     public func hrValueReceived(_ identifier: String, data: PolarHrData) {
-        NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
+        //NSLog("(\(identifier)) HR notification: \(data.hr) rrs: \(data.rrs) rrsMs: \(data.rrsMs) c: \(data.contact) s: \(data.contactSupported)")
         if hrDataSubjects.keys.contains(identifier){
             hrDataSubjects[identifier]?.onNext(data)
         }

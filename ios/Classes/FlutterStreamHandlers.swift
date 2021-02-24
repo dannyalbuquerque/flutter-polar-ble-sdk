@@ -29,7 +29,7 @@ public class AccStreamHandler: NSObject, FlutterStreamHandler
                         switch e {
                         case .next(let data):
                             for item in data.samples {
-                                NSLog("    x: \(item.x) y: \(item.y) z: \(item.z)")
+                                //NSLog("    x: \(item.x) y: \(item.y) z: \(item.z)")
                                 let accDict : [String: Any] = [ "x": item.x, "y":item.y,"z":item.z,"timestamp":data.timeStamp]
                                 let accJsonData = try! JSONSerialization.data(withJSONObject: accDict, options: [])
                                 let accJsonString = String(data: accJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
@@ -136,7 +136,7 @@ public class EcgStreamHandler: NSObject, FlutterStreamHandler
                         switch e {
                         case .next(let data):
                             for µv in data.samples {
-                                NSLog("    µV: \(µv)")
+                               // NSLog("    µV: \(µv)")
                             }
                             let ecgDict : [String: Any] = [ "samples":data.samples,"timestamp": data.timeStamp]
                             let ecgJsonData = try! JSONSerialization.data(withJSONObject: ecgDict, options: [])
@@ -200,7 +200,7 @@ public class PpgStreamHandler: NSObject, FlutterStreamHandler
                         case .next(let data):
                             var samples = [Int32]()
                             for item in data.samples {
-                                NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2), ambient: \(item.ambient)")
+                               // NSLog("    ppg0: \(item.ppg0) ppg1: \(item.ppg1) ppg2: \(item.ppg2), ambient: \(item.ambient)")
                                 samples.append(item.ppg0)
                                 samples.append(item.ppg1)
                                 samples.append(item.ppg2)
