@@ -58,7 +58,7 @@ class _DeviceViewState extends State<DeviceView>
                   : () => disconnect(deviceId),
               child: Text('Disconnect'),
             ),
-            // RaisedButton(
+            // RaisedButton(devi
             //   onPressed: autoconnect,
             //   child: Text('Autoconnect'),
             // ),
