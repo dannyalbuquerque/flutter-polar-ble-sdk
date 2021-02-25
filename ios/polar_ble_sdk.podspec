@@ -25,4 +25,5 @@ A new flutter plugin project.
   s.preserve_paths = 'PolarBleSdk.xcframework', 'RxSwift.xcframework'
   s.xcconfig = { 'OTHER_LDFLAGS' => '-framework PolarBleSdk -framework RxSwift' }
   s.vendored_frameworks = 'PolarBleSdk.xcframework', 'RxSwift.xcframework'
+  s.static_framework = true
 end
