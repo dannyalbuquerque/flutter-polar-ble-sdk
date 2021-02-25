@@ -27,7 +27,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   permission_handler: 8278954f2382902f63f00dd8828769c0bd6d511b
-  polar_ble_sdk: 864c412832ad1d494eb95fa46d38f2c4cb42b49f
+  polar_ble_sdk: c515befccb87d20cb44285c06359cb31ffae7de2
   streams_channel: 16855ffd0568eded9563b2fec6a1bfa94420b353
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
