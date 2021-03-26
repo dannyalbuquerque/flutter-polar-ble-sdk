@@ -53,10 +53,11 @@ class PolarBleSdk {
   //   return _hrBroadcastEventChannel.receiveBroadcastStream();
   // }
 
-  Stream<AccelerometerData> acc(String deviceId) {
-    return _accStreamsChannel
-        .receiveBroadcastStream(deviceId)
-        .map((data) => AccelerometerData.fromJson(jsonDecode(data)));
+  Stream<AccelerometerData> acc(String deviceId, int sampleRate) {
+    return _accStreamsChannel.receiveBroadcastStream({
+      "deviceId": deviceId,
+      "sampleRate": sampleRate
+    }).map((data) => AccelerometerData.fromJson(jsonDecode(data)));
   }
 
   Stream<HrData> hr(String deviceId) {

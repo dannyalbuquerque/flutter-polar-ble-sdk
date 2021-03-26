@@ -16,13 +16,13 @@ public class AccStreamHandler: NSObject, FlutterStreamHandler
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         self.eventSink = events
-        guard let args = arguments else {
+        guard let args = arguments as? [String: Any] else {
             return nil
         }
-        if let deviceId = args as? String {
-            print("Params received on iOS = \(deviceId)")
+        if let deviceId = args[Constants.Arguments.deviceId] as? String, let sampleRate = args[Constants.Arguments.sampleRate] as? Int32  {
+            print("Params received on iOS = \(deviceId), \(sampleRate)")
             self.accDisposable?.dispose()
-                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])
+                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: UInt16(sampleRate), PolarSensorSetting.SettingType.resolution: 16])
                 NSLog("settings: \(customSettings.settings)")
                 self.accDisposable = api.startAccStreaming(deviceId, settings: customSettings).observe(on: MainScheduler.instance)
                     .subscribe{ e in
@@ -121,7 +121,7 @@ public class EcgStreamHandler: NSObject, FlutterStreamHandler
         guard let args = arguments else {
             return nil
         }
-        if let deviceId = args as? String {
+        if let deviceId = args as? String{
             print("Params received on iOS = \(deviceId)")
             self.ecgDisposable?.dispose()
 //                let customSettings = PolarSensorSetting([PolarSensorSetting.SettingType.range:2, PolarSensorSetting.SettingType.sampleRate: 25, PolarSensorSetting.SettingType.resolution: 16])

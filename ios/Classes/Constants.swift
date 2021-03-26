@@ -14,5 +14,6 @@ struct Constants {
     }
     struct Arguments {
         static let  deviceId = "deviceId"
+        static let sampleRate = "sampleRate"
     }
 }

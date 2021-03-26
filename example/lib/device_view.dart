@@ -174,7 +174,7 @@ class _DeviceViewState extends State<DeviceView>
       });
     } else {
       try {
-        accSubscription = polarBleSdk.acc(deviceId).listen(
+        accSubscription = polarBleSdk.acc(deviceId, 100).listen(
           (accData) {
             //print(accData.toString());
             setState(() {

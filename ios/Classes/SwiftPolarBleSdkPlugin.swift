@@ -48,7 +48,8 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         //        hrBroadcastEventChannel.setStreamHandler(hrBroadcastStreamHandler)
         let accStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.acc, binaryMessenger: registrar.messenger())
         accStreamsChannel.setStreamHandlerFactory({ arguments in
-            let deviceId = arguments as! String
+            let args = arguments as! [String: Any]
+            let deviceId = args[Constants.Arguments.deviceId] as! String
             instance.accDisposables.updateValue(nil, forKey: deviceId)
             return AccStreamHandler(accDisposable: instance.accDisposables[deviceId] ?? nil, api: instance.api)
         })

@@ -31,10 +31,13 @@ public class AccStreamHandler implements EventChannel.StreamHandler {
             // NOTE dispose will stop streaming if it is "running"
             accDisposable.dispose();
         }
-        String deviceId = arguments.toString();
+        Map args = (Map) arguments;
+        String deviceId = (String) args.get("deviceId");
+        int sampleRate = (int) args.get("sampleRate");
+        Log.d(TAG, "Params received on iOS = "+deviceId+", "+sampleRate);
         Map<PolarSensorSetting.SettingType, Integer> settings = new HashMap();
         settings.put(PolarSensorSetting.SettingType.RANGE, 2);
-        settings.put(PolarSensorSetting.SettingType.SAMPLE_RATE, 25);
+        settings.put(PolarSensorSetting.SettingType.SAMPLE_RATE, sampleRate);
         settings.put(PolarSensorSetting.SettingType.RESOLUTION, 16);
         PolarSensorSetting customSettings = new PolarSensorSetting(settings);
         accDisposable = api.startAccStreaming(deviceId, customSettings).observeOn(AndroidSchedulers.mainThread())
