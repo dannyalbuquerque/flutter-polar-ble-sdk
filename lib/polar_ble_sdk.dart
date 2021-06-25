@@ -30,15 +30,17 @@ class PolarBleSdk {
   final _ppgsearchStreamsChannel = StreamsChannel(EventName.ppg);
   final _searchEventChannel = EventChannel(EventName.search);
 
-  Future<void> connect(String deviceId) async {
+  Future<void> connect(String deviceId,
+      {Duration timeout = DEFAULT_TIMEOUT}) async {
     await _channel.invokeMethod(
-        MethodName.connect, {"deviceId": deviceId}).timeout(DEFAULT_TIMEOUT);
+        MethodName.connect, {"deviceId": deviceId}).timeout(timeout);
     return;
   }
 
-  Future<void> disconnect(String deviceId) async {
+  Future<void> disconnect(String deviceId,
+      {Duration timeout = DEFAULT_TIMEOUT}) async {
     await _channel.invokeMethod(
-        MethodName.disconnect, {"deviceId": deviceId}).timeout(DEFAULT_TIMEOUT);
+        MethodName.disconnect, {"deviceId": deviceId}).timeout(timeout);
     return;
   }
 
