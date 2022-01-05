@@ -3,6 +3,8 @@ struct Constants {
         static let connect = "connect"
         static let disconnect = "disconnect"
         static let autoconnect = "autoconnect"
+        static let batteryLevel = "batteryLevel"
+        static let fwVersion = "fwVersion"
     }
     struct EventNames {
         static let  hrBroadcast = "hrBroadcast"

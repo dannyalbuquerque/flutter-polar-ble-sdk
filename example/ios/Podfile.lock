@@ -25,7 +25,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/streams_channel/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   permission_handler: 8278954f2382902f63f00dd8828769c0bd6d511b
   polar_ble_sdk: c515befccb87d20cb44285c06359cb31ffae7de2
   streams_channel: 16855ffd0568eded9563b2fec6a1bfa94420b353

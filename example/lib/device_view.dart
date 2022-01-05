@@ -25,6 +25,8 @@ class _DeviceViewState extends State<DeviceView>
   EcgData _lastEcgData;
   PpgData _lastPpgData;
   bool connected = false;
+  int _lastBatteryLevel;
+  String _lastFwVersion;
 
   StreamSubscription accSubscription;
   StreamSubscription hrSubscription;
@@ -80,6 +82,14 @@ class _DeviceViewState extends State<DeviceView>
               onPressed: connected ? () => ppg(deviceId) : null,
               child: Text('PPG'),
             ),
+            RaisedButton(
+              onPressed: connected ? () => batteryLevel(deviceId) : null,
+              child: Text('BATTERY LEVEL'),
+            ),
+            RaisedButton(
+              onPressed: connected ? () => fwVersion(deviceId) : null,
+              child: Text('FIRMWARE VERSION'),
+            ),
             SizedBox(height: 32),
             _lastAccData != null
                 ? Text('$deviceId: ${_lastAccData.toString()}')
@@ -92,6 +102,12 @@ class _DeviceViewState extends State<DeviceView>
                 : Container(),
             _lastPpgData != null
                 ? Text('$deviceId: ${_lastPpgData.toString()}')
+                : Container(),
+            _lastBatteryLevel != null
+                ? Text('$deviceId: ${_lastBatteryLevel.toString()}')
+                : Container(),
+            _lastFwVersion != null
+                ? Text('$deviceId: $_lastFwVersion')
                 : Container(),
           ],
         ),
@@ -131,6 +147,28 @@ class _DeviceViewState extends State<DeviceView>
       print('disconnected of $deviceId');
       setState(() {
         connected = false;
+      });
+    } catch (e, stack) {
+      print(stack.toString());
+    }
+  }
+
+  void batteryLevel(String deviceId) async {
+    try {
+      int batteryLevel = await polarBleSdk.batteryLevel(deviceId);
+      setState(() {
+        _lastBatteryLevel = batteryLevel;
+      });
+    } catch (e, stack) {
+      print(stack.toString());
+    }
+  }
+
+  void fwVersion(String deviceId) async {
+    try {
+      String fwVersion = await polarBleSdk.fwVersion(deviceId);
+      setState(() async {
+        _lastFwVersion = fwVersion;
       });
     } catch (e, stack) {
       print(stack.toString());

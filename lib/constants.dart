@@ -3,6 +3,8 @@ abstract class MethodName {
   static const String connect = "connect";
   static const String disconnect = "disconnect";
   static const String autoconnect = "autoconnect";
+  static const String batteryLevel = "batteryLevel";
+  static const String fwVersion = "fwVersion";
 }
 
 abstract class EventName {

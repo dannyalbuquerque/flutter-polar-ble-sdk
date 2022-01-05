@@ -1,7 +1,6 @@
 name: polar_ble_sdk
-description: A new flutter plugin project.
+description: Polar Ble SDK for Flutter
 version: 0.0.1
-author:
 homepage:
 
 environment:

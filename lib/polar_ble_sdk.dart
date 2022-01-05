@@ -44,6 +44,18 @@ class PolarBleSdk {
     return;
   }
 
+  Future<int> batteryLevel(String deviceId,
+      {Duration timeout = DEFAULT_TIMEOUT}) async {
+    return await _channel.invokeMethod<int>(
+        MethodName.batteryLevel, {"deviceId": deviceId}).timeout(timeout);
+  }
+
+  Future<String> fwVersion(String deviceId,
+      {Duration timeout = DEFAULT_TIMEOUT}) async {
+    return await _channel.invokeMethod<String>(
+        MethodName.fwVersion, {"deviceId": deviceId}).timeout(timeout);
+  }
+
   // Future<void> autoconnect() async {
   //   await _channel
   //       .invokeMethod(MethodName.autoconnect)

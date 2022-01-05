@@ -25,6 +25,9 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     
     var connectResults = [String : FlutterResult]()
     var disconnectResults = [String : FlutterResult]()
+
+    var batteryLevelResults = [String : UInt]()
+    var fwVersionResults = [String : String]()
     
     var hrDataSubjects = [String : PublishSubject<PolarHrData>]()
     
@@ -141,6 +144,48 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                                         "flutter arguments in method: (\(call.method)", details: nil))
             }
             break
+        case Constants.MethodNames.batteryLevel:
+            guard let args = call.arguments else {
+                return
+            }
+            if let myArgs = args as? [String: Any],
+               let deviceId = myArgs[Constants.Arguments.deviceId] as? String{
+                print("Params received on iOS = \(deviceId)")
+                do{
+                    if let batteryLevel = batteryLevelResults[deviceId] {
+                        result(batteryLevel)
+                    }else{
+                result(FlutterError(code:call.method, message: "iOS could not extract " +
+                                        "battery level for: (\(deviceId), is the device connected ?", details: nil))
+                    }
+                } catch let err {
+                    result(FlutterError(code: call.method,
+                                        message: err.localizedDescription,
+                                        details: nil))
+                }
+            } else {
+                result(FlutterError(code: "-1", message: "iOS could not extract " +
+                                        "flutter arguments in method: (\(call.method)", details: nil))
+            }
+            break
+            case Constants.MethodNames.fwVersion:
+            guard let args = call.arguments else {
+                return
+            }
+            if let myArgs = args as? [String: Any],
+               let deviceId = myArgs[Constants.Arguments.deviceId] as? String{
+                print("Params received on iOS = \(deviceId)")
+                    if let fwVersion = fwVersionResults[deviceId] {
+                        result(fwVersion)
+                    }else{
+                result(FlutterError(code:call.method, message: "iOS could not extract " +
+                                        "fwVersion for: (\(deviceId), is the device connected ?", details: nil))
+                    }
+            } else {
+                result(FlutterError(code: "-1", message: "iOS could not extract " +
+                                        "flutter arguments in method: (\(call.method)", details: nil))
+            }
+            break
         default: result(FlutterMethodNotImplemented)
         }
     }
@@ -169,10 +214,14 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         NSLog("battery level updated: \(batteryLevel)")
         connectResults[identifier]?(nil)
         connectResults[identifier] = nil
+        batteryLevelResults[identifier] = batteryLevel
     }
     
     public func disInformationReceived(_ identifier: String, uuid: CBUUID, value: String) {
         NSLog("dis info: \(uuid.uuidString) value: \(value)")
+        if uuid == BleDisClient.SOFTWARE_REVISION_STRING {
+            fwVersionResults[identifier] = value
+        }
     }
     
     // PolarBleApiDeviceEcgObserver
