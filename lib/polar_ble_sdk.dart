@@ -29,6 +29,7 @@ class PolarBleSdk {
   final _ecgsearchStreamsChannel = StreamsChannel(EventName.ecg);
   final _ppgsearchStreamsChannel = StreamsChannel(EventName.ppg);
   final _searchEventChannel = EventChannel(EventName.search);
+  final _ppisearchStreamsChannel = StreamsChannel(EventName.ppi);
 
   Future<void> connect(String deviceId,
       {Duration timeout = DEFAULT_TIMEOUT}) async {
@@ -96,5 +97,11 @@ class PolarBleSdk {
     return _searchEventChannel
         .receiveBroadcastStream()
         .map((data) => PolarDeviceInfo.fromJson(jsonDecode(data)));
+  }
+
+  Stream<HrData> ppi(String deviceId) {
+    return _ppisearchStreamsChannel
+        .receiveBroadcastStream(deviceId)
+        .map((data) => HrData.fromJson(jsonDecode(data)));
   }
 }

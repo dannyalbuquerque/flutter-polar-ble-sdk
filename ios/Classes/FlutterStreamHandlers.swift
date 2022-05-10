@@ -286,6 +286,66 @@ public class SearchStreamHandler: NSObject, FlutterStreamHandler
     
 }
 
+public class PpiStreamHandler: NSObject, FlutterStreamHandler
+ {
+    
+    var eventSink: FlutterEventSink?
+    var ppiDisposable: Disposable?
+    var api: PolarBleApi
+    
+    init(ppiDisposable: Disposable?, api: PolarBleApi){
+        self.ppiDisposable = ppiDisposable
+        self.api = api
+    }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        guard let args = arguments else {
+            return nil
+        }
+        if let deviceId = args as? String {
+            print("Params received on iOS = \(deviceId)")
+            self.ppiDisposable?.dispose()
+                self.ppiDisposable = api.startOhrPPIStreaming(deviceId)
+                    .observe(on: MainScheduler.instance)
+                    .subscribe{ e in
+                        switch e {
+                        case .next(let data):
+                            if(!data.samples.isEmpty){
+                                let hr = data.samples.last!.hr
+                                var rrs: [UInt16] = []
+                                for sample in data.samples {
+                                    rrs.append(sample.ppInMs)
+                                }
+                                let hrDict : [String: Any] = [ "hr": hr, "rrs":rrs,"timestamp": (Date.init().timeIntervalSince1970 * 1000.0).rounded()]
+                                let hrJsonData = try! JSONSerialization.data(withJSONObject: hrDict, options: [])
+                                let hrJsonString = String(data: hrJsonData, encoding: String.Encoding(rawValue: String.Encoding.utf8.rawValue))!
+                                events(hrJsonString)
+                            }
+                        case .error(let err):
+                            NSLog("PPI error: \(err)")
+                            events(FlutterError(code: "PpiStreamHandler.onListen",
+                                                message: err.localizedDescription,
+                                                details: nil))
+                        case .completed:
+                            break
+                        }
+                    }
+        } else {
+            events(FlutterError(code: "-1", message: "iOS could not extract " +
+                                    "flutter arguments in method: PpiStreamHandler.onListen", details: nil))
+        }
+        return nil
+    }
+    
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        self.eventSink = nil
+        self.ppiDisposable?.dispose()
+        return nil
+    }
+    
+}
+
 //public class HrBroadcastStreamHandler: NSObject, FlutterStreamHandler {
 //
 //    var eventSink: FlutterEventSink?

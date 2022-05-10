@@ -42,6 +42,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private StreamsChannel hrStreamsChannel;
   private StreamsChannel ecgStreamsChannel;
   private StreamsChannel ppgStreamsChannel;
+  private StreamsChannel ppiStreamsChannel;
   private EventChannel searchEventChannel;
   private Map<String, PublishSubject<PolarHrData>> hrDataSubjects = new HashMap();
 
@@ -52,6 +53,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
   private Map<String, Disposable>  accDisposables = new HashMap();
   private Map<String, Disposable>  ecgDisposables = new HashMap();
   private Map<String, Disposable>  ppgDisposables = new HashMap();
+  private Map<String, Disposable>  ppiDisposables = new HashMap();
   Disposable searchDisposable;
 
   private Map<String, Result> connectResults = new HashMap();
@@ -94,6 +96,14 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         ppgDisposables.put(deviceId, null);
       }
       return new PpgStreamHandler(ppgDisposables.get(deviceId), api);
+    });
+    ppiStreamsChannel = new StreamsChannel(flutterPluginBinding.getBinaryMessenger(), EventName.ppi);
+    ppiStreamsChannel.setStreamHandlerFactory(arguments -> {
+      final String deviceId = arguments.toString();
+      if (!ppiDisposables.containsKey(deviceId)) {
+        ppiDisposables.put(deviceId, null);
+      }
+      return new PpiStreamHandler(ppiDisposables.get(deviceId), api);
     });
     searchEventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), EventName.search);
     searchEventChannel.setStreamHandler(new EventChannel.StreamHandler() {
@@ -197,6 +207,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         if(ecgDisposables.containsKey(deviceId) && ecgDisposables.get(deviceId) != null && !ecgDisposables.get(deviceId).isDisposed()) ecgDisposables.get(deviceId).dispose();
         if(ecgDisposables.containsKey(deviceId) && ecgDisposables.get(deviceId) != null && !ecgDisposables.get(deviceId).isDisposed()) ecgDisposables.get(deviceId).dispose();
         if(ppgDisposables.containsKey(deviceId) && ppgDisposables.get(deviceId) != null && !ppgDisposables.get(deviceId).isDisposed()) ppgDisposables.get(deviceId).dispose();
+        if(ppiDisposables.containsKey(deviceId) && ppiDisposables.get(deviceId) != null && !ppiDisposables.get(deviceId).isDisposed()) ppiDisposables.get(deviceId).dispose();
         api.disconnectFromDevice(deviceId);
         disconnectResults.put(deviceId, result);
         //result.success(null);
@@ -260,6 +271,7 @@ public class PolarBleSdkPlugin implements FlutterPlugin, MethodCallHandler {
         ecgDisposables.remove(deviceId);
         accDisposables.remove(deviceId);
         ppgDisposables.remove(deviceId);
+        ppiDisposables.remove(deviceId);
         if(disconnectResults.containsKey(deviceId)){
           disconnectResults.get(deviceId).success(null);
           disconnectResults.remove(deviceId);

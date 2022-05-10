@@ -21,6 +21,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
     var accDisposables = [String : Disposable?]()
     var ecgDisposables = [String : Disposable?]()
     var ppgDisposables = [String : Disposable?]()
+    var ppiDisposables = [String : Disposable?]()
     var searchDisposable: Disposable?
     
     var connectResults = [String : FlutterResult]()
@@ -76,6 +77,12 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         })
         let searchEventChannel = FlutterEventChannel(name: Constants.EventNames.search, binaryMessenger: registrar.messenger())
         searchEventChannel.setStreamHandler(SearchStreamHandler(searchDisposable: instance.searchDisposable, api: instance.api))
+        let ppiStreamsChannel = FlutterStreamsChannel(name: Constants.EventNames.ppi, binaryMessenger: registrar.messenger())
+        ppiStreamsChannel.setStreamHandlerFactory({arguments in
+        let deviceId = arguments as! String
+        instance.ppiDisposables.updateValue(nil, forKey: deviceId)
+        return PpiStreamHandler(ppiDisposable: instance.ppiDisposables[deviceId]  ?? nil, api: instance.api)
+        })
     }
     
     
@@ -131,6 +138,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
                     accDisposables[deviceId]??.dispose();
                     ecgDisposables[deviceId]??.dispose();
                     ppgDisposables[deviceId]??.dispose();
+                    ppiDisposables[deviceId]??.dispose();
                     try self.api.disconnectFromDevice(deviceId)
                     disconnectResults[deviceId] = result
                     //result(nil)
@@ -205,6 +213,7 @@ public class SwiftPolarBleSdkPlugin: NSObject, FlutterPlugin,PolarBleApiObserver
         accDisposables[deviceId] = nil
         ecgDisposables[deviceId] = nil
         ppgDisposables[deviceId] = nil
+        ppiDisposables[deviceId] = nil
         disconnectResults[deviceId]?(nil)
         disconnectResults[deviceId] = nil
     }

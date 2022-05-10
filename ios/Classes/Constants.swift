@@ -13,6 +13,7 @@ struct Constants {
         static let  ecg = "ecg"
         static let  ppg = "ppg"
         static let  search = "search"
+        static let  ppi = "ppi"
     }
     struct Arguments {
         static let  deviceId = "deviceId"
