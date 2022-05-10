@@ -238,19 +238,35 @@ class _DeviceViewState extends State<DeviceView>
       });
     } else {
       try {
-        hrSubscription = polarBleSdk.hr(deviceId).listen(
-          (hrData) {
-            //print(hrData.toString());
-            setState(() {
-              _lastHrData = hrData;
-            });
-          },
-          onError: (e) {
-            print(e);
-          },
-          onDone: () => print('done'),
-          cancelOnError: true,
-        );
+        if (widget.device.name.contains("OH1")) {
+          hrSubscription = polarBleSdk.ppi(deviceId).listen(
+            (hrData) {
+              print("PPi data: " + hrData.toString());
+              setState(() {
+                _lastHrData = hrData;
+              });
+            },
+            onError: (e) {
+              print(e);
+            },
+            onDone: () => print('done'),
+            cancelOnError: true,
+          );
+        } else {
+          hrSubscription = polarBleSdk.hr(deviceId).listen(
+            (hrData) {
+              //print(hrData.toString());
+              setState(() {
+                _lastHrData = hrData;
+              });
+            },
+            onError: (e) {
+              print(e);
+            },
+            onDone: () => print('done'),
+            cancelOnError: true,
+          );
+        }
       } catch (e, stack) {
         print(stack.toString());
       }
